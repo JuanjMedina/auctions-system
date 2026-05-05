@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(':domain')
+    implementation project(':usecase')
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+    implementation 'org.springframework:spring-web'
+    implementation 'org.springframework:spring-context'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'jakarta.validation:jakarta.validation-api'
+}
