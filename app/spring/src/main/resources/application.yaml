@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: auctions-system
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auctions_system
+    username: myuser
+    password: mypassword
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    enabled: true
