@@ -11,33 +11,37 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "bids")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class BidJpaEntity {
 
-    @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+  @Id
+  @Column(name = "id", updatable = false, nullable = false)
+  private UUID id;
 
-    @Column(name = "auction_id", nullable = false)
-    private UUID auctionId;
+  @Column(name = "auction_id", nullable = false)
+  private UUID auctionId;
 
-    @Column(name = "bidder_id", nullable = false)
-    private UUID bidderId;
+  @Column(name = "bidder_id", nullable = false)
+  private UUID bidderId;
 
-    @Column(name = "amount", nullable = false, precision = 19, scale = 4)
-    private BigDecimal amount;
+  @Column(name = "amount", nullable = false, precision = 19, scale = 4)
+  private BigDecimal amount;
 
-    @Column(name = "is_auto_bid", nullable = false)
-    private boolean isAutoBid;
+  @Column(name = "is_auto_bid", nullable = false)
+  private boolean isAutoBid;
 
-    @Column(name = "max_auto_amount", precision = 19, scale = 4)
-    private BigDecimal maxAutoAmount;
+  @Column(name = "max_auto_amount", precision = 19, scale = 4)
+  private BigDecimal maxAutoAmount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private BidStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = false, length = 20)
+  private BidStatus status;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private Instant createdAt;
+  @CreationTimestamp
+  @Column(name = "created_at", updatable = false, nullable = false)
+  private Instant createdAt;
 }

@@ -1,9 +1,23 @@
+plugins {
+    id 'com.diffplug.spotless' version '7.0.4' apply false
+}
+
 group = 'spring-projects'
 version = '0.0.1-SNAPSHOT'
 description = 'auctions-system'
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        java {
+            googleJavaFormat('1.25.2')
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
 
     java {
         toolchain {

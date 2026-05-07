@@ -13,20 +13,21 @@ import java.util.UUID;
 @Repository
 public interface SpringDataBidRepository extends JpaRepository<BidJpaEntity, UUID> {
 
-    List<BidJpaEntity> findByAuctionIdOrderByAmountDesc(UUID auctionId);
+  List<BidJpaEntity> findByAuctionIdOrderByAmountDesc(UUID auctionId);
 
-    List<BidJpaEntity> findByBidderIdOrderByCreatedAtDesc(UUID bidderId);
+  List<BidJpaEntity> findByBidderIdOrderByCreatedAtDesc(UUID bidderId);
 
-    @Query("""
+  @Query(
+      """
         SELECT b FROM BidJpaEntity b
         WHERE b.auctionId = :auctionId
         AND b.status = :status
         ORDER BY b.amount DESC
         """)
-    List<BidJpaEntity> findByAuctionIdAndStatus(@Param("auctionId") UUID auctionId,
-                                                @Param("status") BidStatus status);
+  List<BidJpaEntity> findByAuctionIdAndStatus(
+      @Param("auctionId") UUID auctionId, @Param("status") BidStatus status);
 
-    default List<BidJpaEntity> findActiveByAuctionId(UUID auctionId) {
-        return findByAuctionIdAndStatus(auctionId, BidStatus.ACTIVE);
-    }
+  default List<BidJpaEntity> findActiveByAuctionId(UUID auctionId) {
+    return findByAuctionIdAndStatus(auctionId, BidStatus.ACTIVE);
+  }
 }
