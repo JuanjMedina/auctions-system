@@ -7,7 +7,14 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"springprojects.auctionssystem", "controller", "adapter", "config", "exception"})
+@ComponentScan(
+    basePackages = {
+      "springprojects.auctionssystem",
+      "controller",
+      "adapter",
+      "config",
+      "exception"
+    })
 @EnableJpaRepositories(basePackages = "repository")
 @EntityScan(basePackages = "entity")
 public class AuctionsSystemApplication {
