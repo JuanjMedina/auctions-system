@@ -1,9 +1,8 @@
-package entity;
+package entity.auction;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.UUID;
+import lombok.*;
 
 @Entity
 @Table(name = "auction_images")

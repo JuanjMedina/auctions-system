@@ -3,15 +3,14 @@ package adapter.out.persistence;
 import domain.auction.Auction;
 import domain.auction.AuctionImage;
 import domain.auction.AuctionRepository;
-import entity.AuctionImageJpaEntity;
-import entity.AuctionJpaEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import repository.SpringDataAuctionRepository;
-
+import entity.auction.AuctionImageJpaEntity;
+import entity.auction.AuctionJpaEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import repository.SpringDataAuctionRepository;
 
 @Component
 @RequiredArgsConstructor
