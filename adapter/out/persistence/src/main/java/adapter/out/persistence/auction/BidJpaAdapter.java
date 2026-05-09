@@ -1,4 +1,4 @@
-package adapter.out.persistence;
+package adapter.out.persistence.auction;
 
 import domain.bid.Bid;
 import domain.bid.BidRepository;
@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import repository.SpringDataBidRepository;
+import repository.auction.SpringDataBidRepository;
 
 @Component
 @RequiredArgsConstructor

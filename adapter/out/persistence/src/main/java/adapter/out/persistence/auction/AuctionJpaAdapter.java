@@ -1,4 +1,4 @@
-package adapter.out.persistence;
+package adapter.out.persistence.auction;
 
 import domain.auction.Auction;
 import domain.auction.AuctionImage;
@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import repository.SpringDataAuctionRepository;
+import repository.auction.SpringDataAuctionRepository;
 
 @Component
 @RequiredArgsConstructor

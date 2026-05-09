@@ -1,4 +1,4 @@
-package repository;
+package repository.auction;
 
 import domain.auction.AuctionStatus;
 import entity.auction.AuctionJpaEntity;
