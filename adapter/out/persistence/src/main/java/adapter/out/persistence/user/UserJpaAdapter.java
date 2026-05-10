@@ -2,39 +2,73 @@ package adapter.out.persistence.user;
 
 import domain.user.User;
 import domain.user.UserRepository;
+import entity.user.UserEntity;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import repository.user.SpringDataUserRepository;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserJpaAdapter implements UserRepository {
 
   private final SpringDataUserRepository springDataRepo;
 
   @Override
   public User save(User user) {
-    return null;
+    return toDomain(springDataRepo.save(toJpaEntity(user)));
   }
 
   @Override
-  public Optional<User> findById(String id) {
-    return Optional.empty();
+  public Optional<User> findById(UUID id) {
+    return springDataRepo.findById(id).map(this::toDomain);
   }
 
   @Override
   public Optional<User> findByEmail(String email) {
-    return Optional.empty();
+    return springDataRepo.findByEmail(email).map(this::toDomain);
   }
 
   @Override
   public Optional<User> findByUsername(String username) {
-    return Optional.empty();
+    return springDataRepo.findByUsername(username).map(this::toDomain);
   }
 
   @Override
-  public Optional<User> countActiveUsers() {
-    return Optional.empty();
+  public boolean existsByEmail(String email) {
+    return springDataRepo.existsByEmail(email);
+  }
+
+  @Override
+  public boolean existsByUsername(String username) {
+    return springDataRepo.existsByUsername(username);
+  }
+
+  private UserEntity toJpaEntity(User user) {
+    return UserEntity.builder()
+        .id(user.getId())
+        .email(user.getEmail())
+        .username(user.getUsername())
+        .passwordHash(user.getPasswordHash())
+        .fullName(user.getFullName())
+        .phone(user.getPhone())
+        .role(user.getRole())
+        .isActive(user.isActive())
+        .build();
+  }
+
+  private User toDomain(UserEntity entity) {
+    return User.reconstitute(
+        entity.getId(),
+        entity.getEmail(),
+        entity.getUsername(),
+        entity.getPasswordHash(),
+        entity.getFullName(),
+        entity.getPhone(),
+        entity.getRole(),
+        entity.isActive(),
+        entity.getCreatedAt(),
+        entity.getUpdatedAt());
   }
 }

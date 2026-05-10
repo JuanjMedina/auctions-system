@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "users")
@@ -25,23 +27,25 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class UserEntity {
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, length = 255)
   private String email;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, length = 50)
   private String username;
 
   @Column(name = "password_hash", nullable = false)
   private String passwordHash;
 
-  @Column(name = "full_name", nullable = false)
+  @Column(name = "full_name", nullable = false, length = 150)
   private String fullName;
 
-  @Column private String phone;
+  @Column(length = 20)
+  private String phone;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, columnDefinition = "user_role")
@@ -50,9 +54,11 @@ public class UserEntity {
   @Column(name = "is_active", nullable = false)
   private boolean isActive;
 
-  @Column(name = "created_at", nullable = false)
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 }
