@@ -3,7 +3,9 @@ package domain.bid;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 public class Bid {
 
   private final UUID id;
@@ -87,37 +89,5 @@ public class Bid {
     if (status == BidStatus.WINNING || status == BidStatus.OUTBID)
       throw new BidExceptions.InvalidBidStatusTransitionException(id, status, BidStatus.CANCELLED);
     this.status = BidStatus.CANCELLED;
-  }
-
-  public UUID getId() {
-    return id;
-  }
-
-  public UUID getAuctionId() {
-    return auctionId;
-  }
-
-  public UUID getBidderId() {
-    return bidderId;
-  }
-
-  public BigDecimal getAmount() {
-    return amount;
-  }
-
-  public boolean isAutoBid() {
-    return autoBid;
-  }
-
-  public BigDecimal getMaxAutoAmount() {
-    return maxAutoAmount;
-  }
-
-  public BidStatus getStatus() {
-    return status;
-  }
-
-  public Instant getCreatedAt() {
-    return createdAt;
   }
 }
