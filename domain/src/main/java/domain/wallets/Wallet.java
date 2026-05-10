@@ -3,9 +3,11 @@ package domain.wallets;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder(access = lombok.AccessLevel.PRIVATE)
 public class Wallet {
 
   private final UUID id;
@@ -16,26 +18,16 @@ public class Wallet {
   private Long version;
   private Instant updatedAt;
 
-  private Wallet(
-      UUID id,
-      UUID userId,
-      BigDecimal balance,
-      BigDecimal reservedBalance,
-      String currency,
-      Long version,
-      Instant updatedAt) {
-    this.id = id;
-    this.userId = userId;
-    this.balance = balance;
-    this.reservedBalance = reservedBalance;
-    this.currency = currency;
-    this.version = version;
-    this.updatedAt = updatedAt;
-  }
-
   public static Wallet create(UUID userId) {
-    return new Wallet(
-        UUID.randomUUID(), userId, BigDecimal.ZERO, BigDecimal.ZERO, "USD", 0L, Instant.now());
+    return Wallet.builder()
+        .id(UUID.randomUUID())
+        .userId(userId)
+        .balance(BigDecimal.ZERO)
+        .reservedBalance(BigDecimal.ZERO)
+        .currency("USD")
+        .version(0L)
+        .updatedAt(Instant.now())
+        .build();
   }
 
   public static Wallet reconstitute(
@@ -46,7 +38,15 @@ public class Wallet {
       String currency,
       Long version,
       Instant updatedAt) {
-    return new Wallet(id, userId, balance, reservedBalance, currency, version, updatedAt);
+    return Wallet.builder()
+        .id(id)
+        .userId(userId)
+        .balance(balance)
+        .reservedBalance(reservedBalance)
+        .currency(currency)
+        .version(version)
+        .updatedAt(updatedAt)
+        .build();
   }
 
   public BigDecimal availableBalance() {
@@ -99,7 +99,7 @@ public class Wallet {
     reservedBalance = reservedBalance.subtract(amount);
     updatedAt = Instant.now();
     return WalletTransaction.create(
-        id, bidId, TransactionType.BID_RELEASE, amount, balance, "Reserved funds released");
+        id, bidId, TransactionType.BID_RELEASE, amount, balance, "Released funds");
   }
 
   public WalletTransaction charge(BigDecimal amount, UUID auctionId) {

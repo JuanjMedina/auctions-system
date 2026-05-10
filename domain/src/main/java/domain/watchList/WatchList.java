@@ -2,9 +2,11 @@ package domain.watchList;
 
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder(access = lombok.AccessLevel.PRIVATE)
 public class WatchList {
 
   private final UUID id;
@@ -12,18 +14,16 @@ public class WatchList {
   private final UUID auctionId;
   private final Instant addedAt;
 
-  private WatchList(UUID id, UUID userId, UUID auctionId, Instant addedAt) {
-    this.id = id;
-    this.userId = userId;
-    this.auctionId = auctionId;
-    this.addedAt = addedAt;
-  }
-
   public static WatchList create(UUID userId, UUID auctionId) {
-    return new WatchList(UUID.randomUUID(), userId, auctionId, Instant.now());
+    return WatchList.builder()
+        .id(UUID.randomUUID())
+        .userId(userId)
+        .auctionId(auctionId)
+        .addedAt(Instant.now())
+        .build();
   }
 
   public static WatchList reconstitute(UUID id, UUID userId, UUID auctionId, Instant addedAt) {
-    return new WatchList(id, userId, auctionId, addedAt);
+    return WatchList.builder().id(id).userId(userId).auctionId(auctionId).addedAt(addedAt).build();
   }
 }

@@ -6,82 +6,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder(access = lombok.AccessLevel.PRIVATE)
 public class Auction {
 
-  // Identidad
   private final UUID id;
   private final UUID sellerId;
-
-  // Clasificacion
   private UUID categoryId;
   private String title;
   private String description;
-
-  // Precios
   private final BigDecimal startingPrice;
   private BigDecimal reservePrice;
   private BigDecimal currentPrice;
   private UUID currentWinnerId;
-
-  // Estado
   private AuctionStatus status;
-
-  // Tiempo
   private final Instant startsAt;
   private Instant endsAt;
   private Instant closedAt;
-
-  // Anti-sniping
   private final boolean autoExtend;
   private final int extendMinutes;
-
-  // Imagenes
   private final List<AuctionImage> images;
-
-  // Auditoria
   private final Instant createdAt;
   private Instant updatedAt;
-
-  // Version optimistic locking
   private Long version;
 
-  // Constructor privado - usar factory methods
-  private Auction(
-      UUID id,
-      UUID sellerId,
-      UUID categoryId,
-      String title,
-      String description,
-      BigDecimal startingPrice,
-      BigDecimal reservePrice,
-      Instant startsAt,
-      Instant endsAt,
-      boolean autoExtend,
-      int extendMinutes) {
-    this.id = id;
-    this.sellerId = sellerId;
-    this.categoryId = categoryId;
-    this.title = title;
-    this.description = description;
-    this.startingPrice = startingPrice;
-    this.reservePrice = reservePrice;
-    this.currentPrice = startingPrice;
-    this.currentWinnerId = null;
-    this.status = AuctionStatus.DRAFT;
-    this.startsAt = startsAt;
-    this.endsAt = endsAt;
-    this.autoExtend = autoExtend;
-    this.extendMinutes = extendMinutes;
-    this.images = new ArrayList<>();
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    this.version = 0L;
-  }
-
-  // Factory method: subasta nueva
   public static Auction create(
       UUID sellerId,
       UUID categoryId,
@@ -94,21 +45,30 @@ public class Auction {
       boolean autoExtend,
       int extendMinutes) {
     validateCreation(title, startingPrice, reservePrice, startsAt, endsAt, extendMinutes);
-    return new Auction(
-        UUID.randomUUID(),
-        sellerId,
-        categoryId,
-        title,
-        description,
-        startingPrice,
-        reservePrice,
-        startsAt,
-        endsAt,
-        autoExtend,
-        extendMinutes);
+    Instant now = Instant.now();
+    return Auction.builder()
+        .id(UUID.randomUUID())
+        .sellerId(sellerId)
+        .categoryId(categoryId)
+        .title(title)
+        .description(description)
+        .startingPrice(startingPrice)
+        .reservePrice(reservePrice)
+        .currentPrice(startingPrice)
+        .currentWinnerId(null)
+        .status(AuctionStatus.DRAFT)
+        .startsAt(startsAt)
+        .endsAt(endsAt)
+        .closedAt(null)
+        .autoExtend(autoExtend)
+        .extendMinutes(extendMinutes)
+        .images(new ArrayList<>())
+        .createdAt(now)
+        .updatedAt(now)
+        .version(0L)
+        .build();
   }
 
-  // Factory method: reconstruir desde persistencia (usado por AuctionJpaAdapter)
   public static Auction reconstitute(
       UUID id,
       UUID sellerId,
@@ -129,43 +89,40 @@ public class Auction {
       Instant createdAt,
       Instant updatedAt,
       Long version) {
-    Auction auction =
-        new Auction(
-            id,
-            sellerId,
-            categoryId,
-            title,
-            description,
-            startingPrice,
-            reservePrice,
-            startsAt,
-            endsAt,
-            autoExtend,
-            extendMinutes);
-    auction.currentPrice = currentPrice;
-    auction.currentWinnerId = currentWinnerId;
-    auction.status = status;
-    auction.closedAt = closedAt;
-    auction.images.addAll(images);
-    auction.version = version;
-    return auction;
+    return Auction.builder()
+        .id(id)
+        .sellerId(sellerId)
+        .categoryId(categoryId)
+        .title(title)
+        .description(description)
+        .startingPrice(startingPrice)
+        .reservePrice(reservePrice)
+        .currentPrice(currentPrice)
+        .currentWinnerId(currentWinnerId)
+        .status(status)
+        .startsAt(startsAt)
+        .endsAt(endsAt)
+        .closedAt(closedAt)
+        .autoExtend(autoExtend)
+        .extendMinutes(extendMinutes)
+        .images(new ArrayList<>(images))
+        .createdAt(createdAt)
+        .updatedAt(updatedAt)
+        .version(version)
+        .build();
   }
 
-  // Logica de negocio: registrar puja
   public void placeBid(UUID bidderId, BigDecimal amount) {
     if (!isAcceptingBids()) throw new AuctionExceptions.AuctionNotActiveException(id, status);
     if (bidderId.equals(sellerId)) throw new AuctionExceptions.SellerCannotBidException(id);
     if (amount.compareTo(currentPrice) <= 0)
       throw new AuctionExceptions.BidTooLowException(id, amount, currentPrice);
-
     this.currentPrice = amount;
     this.currentWinnerId = bidderId;
     this.updatedAt = Instant.now();
-
     if (autoExtend && isInLastMinutes()) extendTime();
   }
 
-  // Logica de negocio: publicar subasta
   public void publish() {
     if (status != AuctionStatus.DRAFT)
       throw new AuctionExceptions.InvalidAuctionStatusTransitionException(
@@ -174,7 +131,6 @@ public class Auction {
     this.updatedAt = Instant.now();
   }
 
-  // Logica de negocio: activar subasta (SCHEDULED -> ACTIVE)
   public void activate() {
     if (status != AuctionStatus.SCHEDULED)
       throw new AuctionExceptions.InvalidAuctionStatusTransitionException(
@@ -183,7 +139,6 @@ public class Auction {
     this.updatedAt = Instant.now();
   }
 
-  // Logica de negocio: cerrar subasta
   public void close() {
     if (status != AuctionStatus.ACTIVE && status != AuctionStatus.EXTENDED)
       throw new AuctionExceptions.InvalidAuctionStatusTransitionException(
@@ -195,7 +150,6 @@ public class Auction {
     this.status = (hasWinner && reserveMet) ? AuctionStatus.AWARDED : AuctionStatus.FAILED;
   }
 
-  // Logica de negocio: cancelar
   public void cancel() {
     if (status == AuctionStatus.AWARDED
         || status == AuctionStatus.PAID
@@ -206,7 +160,6 @@ public class Auction {
     this.updatedAt = Instant.now();
   }
 
-  // Logica de negocio: marcar pago completado
   public void markAsPaid() {
     if (status != AuctionStatus.AWARDED)
       throw new AuctionExceptions.InvalidAuctionStatusTransitionException(
@@ -215,7 +168,22 @@ public class Auction {
     this.updatedAt = Instant.now();
   }
 
-  // Helpers privados
+  public List<AuctionImage> getImages() {
+    return Collections.unmodifiableList(images);
+  }
+
+  public boolean isOwnedBy(UUID userId) {
+    return sellerId.equals(userId);
+  }
+
+  public boolean hasWinner() {
+    return currentWinnerId != null;
+  }
+
+  public boolean reservePriceMet() {
+    return reservePrice == null || currentPrice.compareTo(reservePrice) >= 0;
+  }
+
   private boolean isAcceptingBids() {
     return status == AuctionStatus.ACTIVE || status == AuctionStatus.EXTENDED;
   }
@@ -229,7 +197,6 @@ public class Auction {
     this.status = AuctionStatus.EXTENDED;
   }
 
-  // Validaciones de creacion
   private static void validateCreation(
       String title,
       BigDecimal startingPrice,
@@ -248,22 +215,5 @@ public class Auction {
       throw new IllegalArgumentException("La fecha de cierre debe ser posterior a la de inicio");
     if (extendMinutes < 1 || extendMinutes > 60)
       throw new IllegalArgumentException("Los minutos de extension deben estar entre 1 y 60");
-  }
-
-  // Getters (sin setters - inmutabilidad controlada via metodos de negocio)
-  public List<AuctionImage> getImages() {
-    return Collections.unmodifiableList(images);
-  }
-
-  public boolean isOwnedBy(UUID userId) {
-    return sellerId.equals(userId);
-  }
-
-  public boolean hasWinner() {
-    return currentWinnerId != null;
-  }
-
-  public boolean reservePriceMet() {
-    return reservePrice == null || currentPrice.compareTo(reservePrice) >= 0;
   }
 }

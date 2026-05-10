@@ -2,9 +2,11 @@ package domain.user;
 
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder(access = lombok.AccessLevel.PRIVATE)
 public class User {
 
   private final UUID id;
@@ -18,29 +20,6 @@ public class User {
   private final Instant createdAt;
   private Instant updatedAt;
 
-  private User(
-      UUID id,
-      String email,
-      String username,
-      String passwordHash,
-      String fullName,
-      String phone,
-      Role role,
-      boolean isActive,
-      Instant createdAt,
-      Instant updatedAt) {
-    this.id = id;
-    this.email = email;
-    this.username = username;
-    this.passwordHash = passwordHash;
-    this.fullName = fullName;
-    this.phone = phone;
-    this.role = role;
-    this.isActive = isActive;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-  }
-
   public static User create(
       String email,
       String username,
@@ -49,8 +28,18 @@ public class User {
       String phone,
       Role role) {
     Instant now = Instant.now();
-    return new User(
-        UUID.randomUUID(), email, username, passwordHash, fullName, phone, role, true, now, now);
+    return User.builder()
+        .id(UUID.randomUUID())
+        .email(email)
+        .username(username)
+        .passwordHash(passwordHash)
+        .fullName(fullName)
+        .phone(phone)
+        .role(role)
+        .isActive(true)
+        .createdAt(now)
+        .updatedAt(now)
+        .build();
   }
 
   public static User reconstitute(
@@ -64,7 +53,17 @@ public class User {
       boolean isActive,
       Instant createdAt,
       Instant updatedAt) {
-    return new User(
-        id, email, username, passwordHash, fullName, phone, role, isActive, createdAt, updatedAt);
+    return User.builder()
+        .id(id)
+        .email(email)
+        .username(username)
+        .passwordHash(passwordHash)
+        .fullName(fullName)
+        .phone(phone)
+        .role(role)
+        .isActive(isActive)
+        .createdAt(createdAt)
+        .updatedAt(updatedAt)
+        .build();
   }
 }
