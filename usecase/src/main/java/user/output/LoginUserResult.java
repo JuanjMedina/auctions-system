@@ -1,4 +1,4 @@
-package usecase.user.output;
+package user.output;
 
 public record LoginUserResult(
     String accessToken, String refreshToken, String tokenType, long expiresIn) {}

@@ -19,8 +19,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import usecase.user.input.RegisterUserInput;
-import usecase.user.output.RegisterUserResult;
+import user.RegisterUserUseCase;
+import user.input.RegisterUserInput;
+import user.output.RegisterUserResult;
 
 @ExtendWith(MockitoExtension.class)
 class RegisterUserUseCaseTest {

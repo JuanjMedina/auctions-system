@@ -20,8 +20,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import usecase.user.input.LoginUserInput;
-import usecase.user.output.LoginUserResult;
+import user.LoginUserUseCase;
+import user.input.LoginUserInput;
+import user.output.LoginUserResult;
 
 @ExtendWith(MockitoExtension.class)
 class LoginUserUseCaseTest {

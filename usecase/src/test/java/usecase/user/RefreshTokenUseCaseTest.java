@@ -20,8 +20,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import usecase.user.input.RefreshTokenInput;
-import usecase.user.output.LoginUserResult;
+import user.RefreshTokenUseCase;
+import user.input.RefreshTokenInput;
+import user.output.LoginUserResult;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenUseCaseTest {

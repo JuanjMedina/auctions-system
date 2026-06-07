@@ -1,4 +1,4 @@
-package usecase.user;
+package user;
 
 import domain.user.User;
 import domain.user.UserExceptions;
@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shared.UseCase;
-import usecase.user.input.RegisterUserInput;
-import usecase.user.output.RegisterUserResult;
+import user.input.RegisterUserInput;
+import user.output.RegisterUserResult;
 
 @Service
 @RequiredArgsConstructor

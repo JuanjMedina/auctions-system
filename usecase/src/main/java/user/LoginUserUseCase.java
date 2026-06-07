@@ -1,41 +1,44 @@
-package usecase.user;
+package user;
 
 import domain.user.TokenGenerator;
 import domain.user.User;
 import domain.user.UserExceptions.InvalidCredentialsException;
+import domain.user.UserPasswordEncoder;
 import domain.user.UserRepository;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import shared.UseCase;
-import usecase.user.input.RefreshTokenInput;
-import usecase.user.output.LoginUserResult;
+import user.input.LoginUserInput;
+import user.output.LoginUserResult;
 
 @Service
 @RequiredArgsConstructor
-public class RefreshTokenUseCase implements UseCase<RefreshTokenInput, LoginUserResult> {
+public class LoginUserUseCase implements UseCase<LoginUserInput, LoginUserResult> {
 
   private static final String TOKEN_TYPE = "Bearer";
   private static final long ACCESS_TOKEN_EXPIRATION_SECONDS = 86_400L; // 24h
 
   private final UserRepository userRepository;
+  private final UserPasswordEncoder passwordEncoder;
   private final TokenGenerator tokenGenerator;
 
   @Override
-  public LoginUserResult execute(RefreshTokenInput input) {
-    UUID userId = tokenGenerator.extractUserIdFromRefreshToken(input.refreshToken());
-
+  public LoginUserResult execute(LoginUserInput input) {
     User user =
         userRepository
-            .findById(userId)
+            .findByEmail(input.email())
             .orElseThrow(() -> new InvalidCredentialsException("Credenciales inválidas"));
 
-    String newAccessToken =
+    if (!passwordEncoder.matches(input.password(), user.getPasswordHash())) {
+      throw new InvalidCredentialsException("Credenciales inválidas");
+    }
+
+    String accessToken =
         tokenGenerator.generateAccessToken(user.getId(), user.getEmail(), user.getRole());
-    String newRefreshToken = tokenGenerator.generateRefreshToken(user.getId());
+    String refreshToken = tokenGenerator.generateRefreshToken(user.getId());
 
     return new LoginUserResult(
-        newAccessToken, newRefreshToken, TOKEN_TYPE, ACCESS_TOKEN_EXPIRATION_SECONDS);
+        accessToken, refreshToken, TOKEN_TYPE, ACCESS_TOKEN_EXPIRATION_SECONDS);
   }
 
   @Override

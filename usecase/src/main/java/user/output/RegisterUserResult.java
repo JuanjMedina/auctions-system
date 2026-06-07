@@ -1,4 +1,4 @@
-package usecase.user.output;
+package user.output;
 
 import java.util.UUID;
 
