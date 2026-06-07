@@ -68,7 +68,7 @@ class LoginUserUseCaseTest {
     when(tokenGenerator.generateAccessToken(USER_ID, EMAIL, Role.BUYER)).thenReturn(ACCESS_TOKEN);
     when(tokenGenerator.generateRefreshToken(USER_ID)).thenReturn(REFRESH_TOKEN);
 
-    LoginUserResult result = useCase.execute(validInput());
+    LoginUserResult result = useCase.run(validInput());
 
     assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
     assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
@@ -84,7 +84,7 @@ class LoginUserUseCaseTest {
     when(tokenGenerator.generateAccessToken(USER_ID, EMAIL, Role.BUYER)).thenReturn(ACCESS_TOKEN);
     when(tokenGenerator.generateRefreshToken(USER_ID)).thenReturn(REFRESH_TOKEN);
 
-    LoginUserResult result = useCase.execute(validInput());
+    LoginUserResult result = useCase.run(validInput());
 
     assertThat(result.accessToken()).isNotEqualTo(result.refreshToken());
   }
@@ -97,7 +97,7 @@ class LoginUserUseCaseTest {
     when(tokenGenerator.generateAccessToken(USER_ID, EMAIL, Role.BUYER)).thenReturn(ACCESS_TOKEN);
     when(tokenGenerator.generateRefreshToken(USER_ID)).thenReturn(REFRESH_TOKEN);
 
-    useCase.execute(validInput());
+    useCase.run(validInput());
 
     verify(tokenGenerator).generateAccessToken(USER_ID, EMAIL, Role.BUYER);
     verify(tokenGenerator).generateRefreshToken(USER_ID);
@@ -109,7 +109,7 @@ class LoginUserUseCaseTest {
   void execute_emailNotFound_throwsInvalidCredentialsException() {
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(InvalidCredentialsException.class);
   }
 
@@ -117,7 +117,7 @@ class LoginUserUseCaseTest {
   void execute_emailNotFound_neverChecksPasswordOrGeneratesToken() {
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(InvalidCredentialsException.class);
 
     verifyNoInteractions(passwordEncoder, tokenGenerator);
@@ -131,7 +131,7 @@ class LoginUserUseCaseTest {
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches(RAW_PASSWORD, HASH)).thenReturn(false);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(InvalidCredentialsException.class);
   }
 
@@ -141,7 +141,7 @@ class LoginUserUseCaseTest {
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches(RAW_PASSWORD, HASH)).thenReturn(false);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(InvalidCredentialsException.class);
 
     verifyNoInteractions(tokenGenerator);
@@ -153,7 +153,7 @@ class LoginUserUseCaseTest {
   void execute_emailNotFound_sameMessageAsWrongPassword() {
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(InvalidCredentialsException.class)
         .hasMessage("Credenciales inválidas");
   }
@@ -164,7 +164,7 @@ class LoginUserUseCaseTest {
     when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches(RAW_PASSWORD, HASH)).thenReturn(false);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(InvalidCredentialsException.class)
         .hasMessage("Credenciales inválidas");
   }

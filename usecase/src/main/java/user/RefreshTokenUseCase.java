@@ -39,7 +39,9 @@ public class RefreshTokenUseCase implements UseCase<RefreshTokenInput, LoginUser
   }
 
   @Override
-  public LoginUserResult failed(RuntimeException exception) {
-    throw exception;
+  public LoginUserResult failed(Exception exception) {
+    if (exception instanceof InvalidCredentialsException e) throw e;
+    if (exception instanceof domain.user.UserExceptions.InvalidRefreshTokenException e) throw e;
+    throw new RuntimeException("Error inesperado en refresh token", exception);
   }
 }

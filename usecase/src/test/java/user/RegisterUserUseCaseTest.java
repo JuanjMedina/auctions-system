@@ -56,7 +56,7 @@ class RegisterUserUseCaseTest {
   void execute_validInput_returnsResultWithCorrectEmailAndUsername() {
     setupHappyPath();
 
-    RegisterUserResult result = useCase.execute(validInput());
+    RegisterUserResult result = useCase.run(validInput());
 
     assertThat(result.email()).isEqualTo(EMAIL);
     assertThat(result.username()).isEqualTo(USERNAME);
@@ -66,7 +66,7 @@ class RegisterUserUseCaseTest {
   void execute_validInput_returnsNonNullUserIdAndWalletId() {
     setupHappyPath();
 
-    RegisterUserResult result = useCase.execute(validInput());
+    RegisterUserResult result = useCase.run(validInput());
 
     assertThat(result.userId()).isNotNull();
     assertThat(result.walletId()).isNotNull();
@@ -76,7 +76,7 @@ class RegisterUserUseCaseTest {
   void execute_validInput_hashesPasswordBeforeSaving() {
     setupHappyPath();
 
-    useCase.execute(validInput());
+    useCase.run(validInput());
 
     // passwordEncoder.encode() must be called with the raw password
     verify(passwordEncoder).encode(RAW_PASSWORD);
@@ -88,7 +88,7 @@ class RegisterUserUseCaseTest {
   void execute_validInput_rawPasswordNeverStoredDirectly() {
     setupHappyPath();
 
-    useCase.execute(validInput());
+    useCase.run(validInput());
 
     // capture the user passed to save and verify its hash != raw password
     verify(userRepository)
@@ -103,7 +103,7 @@ class RegisterUserUseCaseTest {
   void execute_validInput_walletLinkedToCreatedUser() {
     setupHappyPath();
 
-    RegisterUserResult result = useCase.execute(validInput());
+    RegisterUserResult result = useCase.run(validInput());
 
     // walletId is returned and userId is not null — wallet was created for this user
     assertThat(result.walletId()).isNotNull();
@@ -114,7 +114,7 @@ class RegisterUserUseCaseTest {
   void execute_validInput_persistsUserAndWallet() {
     setupHappyPath();
 
-    useCase.execute(validInput());
+    useCase.run(validInput());
 
     verify(userRepository).save(any());
     verify(walletRepository).save(any(Wallet.class));
@@ -126,7 +126,7 @@ class RegisterUserUseCaseTest {
   void execute_emailAlreadyTaken_throwsEmailAlreadyTakenException() {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(EmailAlreadyTakenException.class);
   }
 
@@ -134,7 +134,7 @@ class RegisterUserUseCaseTest {
   void execute_emailAlreadyTaken_exceptionContainsEmail() {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(EmailAlreadyTakenException.class)
         .hasMessageContaining(EMAIL);
   }
@@ -143,7 +143,7 @@ class RegisterUserUseCaseTest {
   void execute_emailAlreadyTaken_neverSavesUserOrWallet() {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(EmailAlreadyTakenException.class);
 
     verify(userRepository, never()).save(any());
@@ -154,7 +154,7 @@ class RegisterUserUseCaseTest {
   void execute_emailAlreadyTaken_neverChecksUsername() {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(EmailAlreadyTakenException.class);
 
     verify(userRepository, never()).existsByUsername(any());
@@ -167,7 +167,7 @@ class RegisterUserUseCaseTest {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
     when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(UsernameAlreadyTakenException.class);
   }
 
@@ -176,7 +176,7 @@ class RegisterUserUseCaseTest {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
     when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(UsernameAlreadyTakenException.class)
         .hasMessageContaining(USERNAME);
   }
@@ -186,7 +186,7 @@ class RegisterUserUseCaseTest {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
     when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(UsernameAlreadyTakenException.class);
 
     verify(userRepository, never()).save(any());
@@ -198,7 +198,7 @@ class RegisterUserUseCaseTest {
     when(userRepository.existsByEmail(EMAIL)).thenReturn(false);
     when(userRepository.existsByUsername(USERNAME)).thenReturn(true);
 
-    assertThatThrownBy(() -> useCase.execute(validInput()))
+    assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(UsernameAlreadyTakenException.class);
 
     verify(passwordEncoder, never()).encode(any());

@@ -42,7 +42,8 @@ public class LoginUserUseCase implements UseCase<LoginUserInput, LoginUserResult
   }
 
   @Override
-  public LoginUserResult failed(RuntimeException exception) {
-    throw exception;
+  public LoginUserResult failed(Exception exception) {
+    if (exception instanceof InvalidCredentialsException e) throw e;
+    throw new RuntimeException("Error inesperado en login", exception);
   }
 }

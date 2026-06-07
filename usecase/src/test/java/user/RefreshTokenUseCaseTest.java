@@ -63,7 +63,7 @@ class RefreshTokenUseCaseTest {
         .thenReturn(NEW_ACCESS_TOKEN);
     when(tokenGenerator.generateRefreshToken(USER_ID)).thenReturn(NEW_REFRESH_TOKEN);
 
-    LoginUserResult result = useCase.execute(new RefreshTokenInput(REFRESH_TOKEN));
+    LoginUserResult result = useCase.run(new RefreshTokenInput(REFRESH_TOKEN));
 
     assertThat(result.accessToken()).isEqualTo(NEW_ACCESS_TOKEN);
     assertThat(result.refreshToken()).isEqualTo(NEW_REFRESH_TOKEN);
@@ -81,7 +81,7 @@ class RefreshTokenUseCaseTest {
         .thenReturn(NEW_ACCESS_TOKEN);
     when(tokenGenerator.generateRefreshToken(USER_ID)).thenReturn(NEW_REFRESH_TOKEN);
 
-    LoginUserResult result = useCase.execute(new RefreshTokenInput(REFRESH_TOKEN));
+    LoginUserResult result = useCase.run(new RefreshTokenInput(REFRESH_TOKEN));
 
     verify(tokenGenerator).generateRefreshToken(USER_ID);
     assertThat(result.refreshToken()).isEqualTo(NEW_REFRESH_TOKEN);
@@ -96,7 +96,7 @@ class RefreshTokenUseCaseTest {
         .thenReturn(NEW_ACCESS_TOKEN);
     when(tokenGenerator.generateRefreshToken(USER_ID)).thenReturn(NEW_REFRESH_TOKEN);
 
-    useCase.execute(new RefreshTokenInput(REFRESH_TOKEN));
+    useCase.run(new RefreshTokenInput(REFRESH_TOKEN));
 
     verify(tokenGenerator).generateAccessToken(USER_ID, EMAIL, Role.BUYER);
   }
@@ -108,7 +108,7 @@ class RefreshTokenUseCaseTest {
     when(tokenGenerator.extractUserIdFromRefreshToken(REFRESH_TOKEN))
         .thenThrow(new InvalidRefreshTokenException());
 
-    assertThatThrownBy(() -> useCase.execute(new RefreshTokenInput(REFRESH_TOKEN)))
+    assertThatThrownBy(() -> useCase.run(new RefreshTokenInput(REFRESH_TOKEN)))
         .isInstanceOf(InvalidRefreshTokenException.class);
   }
 
@@ -117,7 +117,7 @@ class RefreshTokenUseCaseTest {
     when(tokenGenerator.extractUserIdFromRefreshToken(REFRESH_TOKEN))
         .thenThrow(new InvalidRefreshTokenException());
 
-    assertThatThrownBy(() -> useCase.execute(new RefreshTokenInput(REFRESH_TOKEN)))
+    assertThatThrownBy(() -> useCase.run(new RefreshTokenInput(REFRESH_TOKEN)))
         .isInstanceOf(InvalidRefreshTokenException.class);
 
     verifyNoInteractions(userRepository);
@@ -130,7 +130,7 @@ class RefreshTokenUseCaseTest {
     when(tokenGenerator.extractUserIdFromRefreshToken(REFRESH_TOKEN)).thenReturn(USER_ID);
     when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> useCase.execute(new RefreshTokenInput(REFRESH_TOKEN)))
+    assertThatThrownBy(() -> useCase.run(new RefreshTokenInput(REFRESH_TOKEN)))
         .isInstanceOf(InvalidCredentialsException.class);
   }
 
@@ -139,7 +139,7 @@ class RefreshTokenUseCaseTest {
     when(tokenGenerator.extractUserIdFromRefreshToken(REFRESH_TOKEN)).thenReturn(USER_ID);
     when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> useCase.execute(new RefreshTokenInput(REFRESH_TOKEN)))
+    assertThatThrownBy(() -> useCase.run(new RefreshTokenInput(REFRESH_TOKEN)))
         .isInstanceOf(InvalidCredentialsException.class);
 
     verify(tokenGenerator).extractUserIdFromRefreshToken(REFRESH_TOKEN);
