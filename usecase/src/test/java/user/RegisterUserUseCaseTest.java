@@ -1,4 +1,4 @@
-package usecase.user;
+package user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import user.RegisterUserUseCase;
 import user.input.RegisterUserInput;
 import user.output.RegisterUserResult;
 
