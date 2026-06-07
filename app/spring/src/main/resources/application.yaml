@@ -12,3 +12,8 @@ spring:
     show-sql: true
   flyway:
     enabled: true
+
+jwt:
+  secret: ${JWT_SECRET:dev-secret-key-must-be-at-least-32-chars!!}
+  access-expiration-ms: 86400000    # 24 horas
+  refresh-expiration-ms: 604800000  # 7 días

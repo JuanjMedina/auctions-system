@@ -1,6 +1,6 @@
 package springprojects.auctionssystem.config;
 
-import domain.user.PasswordHasher;
+import domain.user.UserPasswordEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -9,8 +9,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class PasswordHasherConfig {
 
   @Bean
-  public PasswordHasher passwordHasher() {
-    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    return encoder::encode;
+  public UserPasswordEncoder userPasswordEncoder() {
+    BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
+    return new UserPasswordEncoder() {
+      public String encode(String raw) {
+        return bcrypt.encode(raw);
+      }
+
+      public boolean matches(String raw, String encoded) {
+        return bcrypt.matches(raw, encoded);
+      }
+    };
   }
 }
