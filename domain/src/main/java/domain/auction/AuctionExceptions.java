@@ -33,6 +33,12 @@ public final class AuctionExceptions {
     }
   }
 
+  public static class AuctionAlreadyClosedException extends RuntimeException {
+    public AuctionAlreadyClosedException(UUID auctionId) {
+      super("La subasta ya está cerrada: " + auctionId);
+    }
+  }
+
   public static class BidTooLowException extends RuntimeException {
     private final BigDecimal attemptedAmount;
     private final BigDecimal currentPrice;

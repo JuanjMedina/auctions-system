@@ -17,4 +17,10 @@ public final class BidExceptions {
       super(String.format("Transicion invalida en puja %s: %s -> %s", bidId, from, to));
     }
   }
+
+  public static class BidAmountTooLowException extends RuntimeException {
+    public BidAmountTooLowException(UUID auctionId, String message) {
+      super(String.format("Puja demasiado baja para la subasta %s: %s", auctionId, message));
+    }
+  }
 }
