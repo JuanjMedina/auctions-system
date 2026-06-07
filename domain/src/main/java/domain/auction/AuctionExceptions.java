@@ -58,4 +58,17 @@ public final class AuctionExceptions {
       super("El vendedor no puede pujar en su propia subasta: " + auctionId);
     }
   }
+
+  public static class UnauthorizedAuctionAccessException extends RuntimeException {
+    private final UUID auctionId;
+
+    public UnauthorizedAuctionAccessException(UUID auctionId) {
+      super("No tienes permiso para modificar la subasta: " + auctionId);
+      this.auctionId = auctionId;
+    }
+
+    public UUID getAuctionId() {
+      return auctionId;
+    }
+  }
 }
