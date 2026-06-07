@@ -1,8 +1,8 @@
 package usecase.user;
 
-import domain.user.PasswordHasher;
 import domain.user.User;
 import domain.user.UserExceptions;
+import domain.user.UserPasswordEncoder;
 import domain.user.UserRepository;
 import domain.wallets.Wallet;
 import domain.wallets.WalletRepository;
@@ -19,7 +19,7 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
 
   private final UserRepository userRepository;
   private final WalletRepository walletRepository;
-  private final PasswordHasher passwordHasher;
+  private final UserPasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -31,7 +31,7 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
       throw new UserExceptions.UsernameAlreadyTakenException(input.username());
     }
 
-    String passwordHash = passwordHasher.hash(input.rawPassword());
+    String passwordHash = passwordEncoder.encode(input.rawPassword());
     User user =
         User.create(
             input.email(),
