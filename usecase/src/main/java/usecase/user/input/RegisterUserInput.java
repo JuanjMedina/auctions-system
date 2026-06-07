@@ -1,4 +1,4 @@
-package usecase.user;
+package usecase.user.input;
 
 import domain.user.Role;
 

@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shared.UseCase;
+import usecase.user.input.RegisterUserInput;
+import usecase.user.output.RegisterUserResult;
 
 @Service
 @RequiredArgsConstructor
