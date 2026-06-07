@@ -1,3 +1,6 @@
 dependencies {
     implementation project(':domain')
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-tx'
 }
