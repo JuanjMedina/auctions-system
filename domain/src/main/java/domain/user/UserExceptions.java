@@ -29,4 +29,29 @@ public final class UserExceptions {
       return username;
     }
   }
+
+  public static class EmailNotFoundException extends RuntimeException {
+    private final String email;
+
+    public EmailNotFoundException(String email) {
+      super("El email no se encontró: " + email);
+      this.email = email;
+    }
+
+    public String getEmail() {
+      return email;
+    }
+  }
+
+  public static class InvalidCredentialsException extends RuntimeException {
+    public InvalidCredentialsException(String message) {
+      super(message);
+    }
+  }
+
+  public static class InvalidRefreshTokenException extends RuntimeException {
+    public InvalidRefreshTokenException() {
+      super("El refresh token es inválido o ha expirado");
+    }
+  }
 }
