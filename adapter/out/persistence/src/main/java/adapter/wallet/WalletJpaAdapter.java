@@ -1,5 +1,6 @@
 package adapter.wallet;
 
+import domain.shared.ConcurrencyException;
 import domain.wallets.Wallet;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import repository.wallet.SpringDataWalletRepository;
 import repository.wallet.SpringDataWalletTransactionRepository;
@@ -23,7 +25,11 @@ public class WalletJpaAdapter implements WalletRepository {
 
   @Override
   public Wallet save(Wallet wallet) {
-    return toDomain(walletRepo.save(toJpaEntity(wallet)));
+    try {
+      return toDomain(walletRepo.save(toJpaEntity(wallet)));
+    } catch (OptimisticLockingFailureException e) {
+      throw new ConcurrencyException("Wallet", wallet.getId());
+    }
   }
 
   @Override

@@ -11,13 +11,13 @@ import domain.outbox.AggregateType;
 import domain.outbox.EventType;
 import domain.outbox.OutboxEvent;
 import domain.outbox.OutboxEventRepository;
+import domain.shared.ConcurrencyException;
 import domain.wallets.Wallet;
 import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
   @Override
   @Transactional
   @Retryable(
-      retryFor = OptimisticLockingFailureException.class,
+      retryFor = ConcurrencyException.class,
       maxAttempts = 3,
       backoff = @Backoff(delay = 100, multiplier = 2))
   public PlaceBidOutput execute(PlaceBidInput input) {

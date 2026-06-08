@@ -1,5 +1,6 @@
 package exception;
 
+import domain.shared.ConcurrencyException;
 import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class ValidationExceptionHandler {
+
+  @ExceptionHandler(ConcurrencyException.class)
+  public ProblemDetail handleConcurrency(ConcurrencyException ex) {
+    ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+    problem.setType(URI.create("urn:problem:concurrency-conflict"));
+    problem.setTitle("Conflicto de concurrencia");
+    problem.setDetail(ex.getMessage());
+    return problem;
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {

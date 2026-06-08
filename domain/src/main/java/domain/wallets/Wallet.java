@@ -68,7 +68,7 @@ public class Wallet {
       throw new IllegalArgumentException("Withdrawal amount must be positive");
     }
     if (availableBalance().compareTo(amount) < 0) {
-      throw new IllegalStateException("Insufficient available balance");
+      throw new WalletExceptions.InsufficientFundsException(availableBalance(), amount);
     }
     balance = balance.subtract(amount);
     updatedAt = Instant.now();
@@ -81,7 +81,7 @@ public class Wallet {
       throw new IllegalArgumentException("Reserve amount must be positive");
     }
     if (availableBalance().compareTo(amount) < 0) {
-      throw new IllegalStateException("Insufficient available balance to reserve");
+      throw new WalletExceptions.InsufficientFundsException(availableBalance(), amount);
     }
     reservedBalance = reservedBalance.add(amount);
     updatedAt = Instant.now();
