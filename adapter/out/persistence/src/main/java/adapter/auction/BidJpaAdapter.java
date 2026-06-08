@@ -1,4 +1,4 @@
-package adapter.out.persistence.auction;
+package adapter.auction;
 
 import domain.bid.Bid;
 import domain.bid.BidRepository;

@@ -1,4 +1,4 @@
-package adapter.out.persistence.watchList;
+package adapter.watchList;
 
 import domain.watchList.WatchList;
 import domain.watchList.WatchListRepository;

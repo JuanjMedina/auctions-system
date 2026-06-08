@@ -1,4 +1,4 @@
-package adapter.out.persistence.outbox;
+package adapter.outbox;
 
 import domain.outbox.EventType;
 import domain.outbox.OutboxEvent;

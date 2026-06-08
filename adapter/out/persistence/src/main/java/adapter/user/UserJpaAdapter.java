@@ -1,4 +1,4 @@
-package adapter.out.persistence.user;
+package adapter.user;
 
 import domain.user.User;
 import domain.user.UserRepository;

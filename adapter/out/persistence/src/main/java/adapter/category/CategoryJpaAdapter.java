@@ -1,4 +1,4 @@
-package adapter.out.persistence.category;
+package adapter.category;
 
 import domain.categories.Category;
 import domain.categories.CategoryRepository;

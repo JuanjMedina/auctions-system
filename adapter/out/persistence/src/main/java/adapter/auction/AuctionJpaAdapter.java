@@ -1,4 +1,4 @@
-package adapter.out.persistence.auction;
+package adapter.auction;
 
 import domain.auction.Auction;
 import domain.auction.AuctionImage;

@@ -1,4 +1,4 @@
-package adapter.out.persistence.wallet;
+package adapter.wallet;
 
 import domain.wallets.Wallet;
 import domain.wallets.WalletRepository;
