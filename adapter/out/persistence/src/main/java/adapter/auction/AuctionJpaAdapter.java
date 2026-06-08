@@ -3,12 +3,14 @@ package adapter.auction;
 import domain.auction.Auction;
 import domain.auction.AuctionImage;
 import domain.auction.AuctionRepository;
+import domain.shared.ConcurrencyException;
 import entity.auction.AuctionImageJpaEntity;
 import entity.auction.AuctionJpaEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import repository.auction.SpringDataAuctionRepository;
 
@@ -20,7 +22,11 @@ public class AuctionJpaAdapter implements AuctionRepository {
 
   @Override
   public Auction save(Auction auction) {
-    return toDomain(springDataRepo.save(toJpaEntity(auction)));
+    try {
+      return toDomain(springDataRepo.save(toJpaEntity(auction)));
+    } catch (OptimisticLockingFailureException e) {
+      throw new ConcurrencyException("Auction", auction.getId());
+    }
   }
 
   @Override

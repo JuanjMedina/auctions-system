@@ -2,11 +2,13 @@ package adapter.auction;
 
 import domain.bid.Bid;
 import domain.bid.BidRepository;
+import domain.shared.ConcurrencyException;
 import entity.auction.BidJpaEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import repository.auction.SpringDataBidRepository;
 
@@ -18,7 +20,11 @@ public class BidJpaAdapter implements BidRepository {
 
   @Override
   public Bid save(Bid bid) {
-    return toDomain(springDataRepo.save(toJpaEntity(bid)));
+    try {
+      return toDomain(springDataRepo.save(toJpaEntity(bid)));
+    } catch (OptimisticLockingFailureException e) {
+      throw new ConcurrencyException("Bid", bid.getId());
+    }
   }
 
   @Override
