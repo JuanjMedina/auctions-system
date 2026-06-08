@@ -1,5 +1,6 @@
 package adapter.out.persistence.outbox;
 
+import domain.outbox.EventType;
 import domain.outbox.OutboxEvent;
 import domain.outbox.OutboxEventRepository;
 import entity.outbox.OutboxEventJpaEntity;
@@ -43,7 +44,7 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
         .id(event.getId())
         .aggregateType(event.getAggregateType())
         .aggregateId(event.getAggregateId())
-        .eventType(event.getEventType())
+        .eventType(event.getEventType().name())
         .payload(event.getPayload())
         .processed(event.isProcessed())
         .processedAt(event.getProcessedAt())
@@ -55,7 +56,7 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
         entity.getId(),
         entity.getAggregateType(),
         entity.getAggregateId(),
-        entity.getEventType(),
+        EventType.valueOf(entity.getEventType()),
         entity.getPayload(),
         entity.isProcessed(),
         entity.getCreatedAt(),

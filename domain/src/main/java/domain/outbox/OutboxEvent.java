@@ -12,14 +12,14 @@ public class OutboxEvent {
   private final UUID id;
   private final AggregateType aggregateType;
   private final UUID aggregateId;
-  private final String eventType;
+  private final EventType eventType;
   private final String payload;
   private boolean processed;
   private final Instant createdAt;
   private Instant processedAt;
 
   public static OutboxEvent create(
-      AggregateType aggregateType, UUID aggregateId, String eventType, String payload) {
+      AggregateType aggregateType, UUID aggregateId, EventType eventType, String payload) {
     return OutboxEvent.builder()
         .id(UUID.randomUUID())
         .aggregateType(aggregateType)
@@ -36,7 +36,7 @@ public class OutboxEvent {
       UUID id,
       AggregateType aggregateType,
       UUID aggregateId,
-      String eventType,
+      EventType eventType,
       String payload,
       boolean processed,
       Instant createdAt,
