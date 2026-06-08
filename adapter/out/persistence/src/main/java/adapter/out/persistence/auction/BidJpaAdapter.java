@@ -50,6 +50,13 @@ public class BidJpaAdapter implements BidRepository {
     springDataRepo.saveAll(bids.stream().map(this::toJpaEntity).toList());
   }
 
+  @Override
+  public Optional<Bid> findLatestActiveBidByAuctionIdAndBidderId(UUID auctionId, UUID bidderId) {
+    return springDataRepo
+        .findLatestActiveBidByAuctionIdAndBidderId(auctionId, bidderId)
+        .map(this::toDomain);
+  }
+
   // Domain -> JpaEntity
   private BidJpaEntity toJpaEntity(Bid bid) {
     return BidJpaEntity.builder()

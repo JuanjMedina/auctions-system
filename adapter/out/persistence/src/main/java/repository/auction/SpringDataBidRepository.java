@@ -3,6 +3,7 @@ package repository.auction;
 import domain.bid.BidStatus;
 import entity.auction.BidJpaEntity;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,16 @@ public interface SpringDataBidRepository extends JpaRepository<BidJpaEntity, UUI
   default List<BidJpaEntity> findActiveByAuctionId(UUID auctionId) {
     return findByAuctionIdAndStatus(auctionId, BidStatus.ACTIVE);
   }
+
+  @Query(
+      """
+        SELECT b FROM BidJpaEntity b
+        WHERE b.auctionId = :auctionId
+        AND b.bidderId = :bidderId
+        AND b.status = 'ACTIVE'
+        ORDER BY b.amount DESC
+        LIMIT 1
+        """)
+  Optional<BidJpaEntity> findLatestActiveBidByAuctionIdAndBidderId(
+      @Param("auctionId") UUID auctionId, @Param("bidderId") UUID bidderId);
 }

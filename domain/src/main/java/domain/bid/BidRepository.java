@@ -16,4 +16,6 @@ public interface BidRepository {
   List<Bid> findActiveByAuctionId(UUID auctionId);
 
   void saveAll(List<Bid> bids);
+
+  Optional<Bid> findLatestActiveBidByAuctionIdAndBidderId(UUID auctionId, UUID bidderId);
 }
