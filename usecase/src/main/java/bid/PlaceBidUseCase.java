@@ -7,12 +7,19 @@ import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import domain.bid.Bid;
 import domain.bid.BidRepository;
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
 import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shared.UseCase;
@@ -24,9 +31,14 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
   private final AuctionRepository auctionRepository;
   private final BidRepository bidRepository;
   private final WalletRepository walletRepository;
+  private final OutboxEventRepository outboxEventRepository;
 
   @Override
   @Transactional
+  @Retryable(
+      retryFor = OptimisticLockingFailureException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 100, multiplier = 2))
   public PlaceBidOutput execute(PlaceBidInput input) {
     Auction auction =
         auctionRepository
@@ -46,7 +58,7 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
     // Capture the previous winner before auction updates its state
     UUID previousWinnerId = auction.getCurrentWinnerId();
 
-    // Validates: auction ACTIVE, bidder != seller, amount > currentPrice
+    // Validates: auction ACTIVE/EXTENDED, bidder != seller, amount > currentPrice
     auction.placeBid(input.bidderId(), input.amount());
 
     // Release funds of the bidder just outbid
@@ -69,6 +81,14 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
     walletRepository.saveTransaction(reserve);
     auctionRepository.save(auction);
     Bid saved = bidRepository.save(newBid);
+
+    // Publish BID_PLACED event via outbox pattern
+    outboxEventRepository.save(
+        OutboxEvent.create(
+            AggregateType.BID,
+            saved.getId(),
+            EventType.BID_PLACED,
+            buildPayload(saved, auction.getCurrentPrice().toString())));
 
     return new PlaceBidOutput(
         saved.getId(),
@@ -108,5 +128,11 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
               walletRepository.saveTransaction(release);
               bidRepository.save(previous);
             });
+  }
+
+  private String buildPayload(Bid bid, String currentPrice) {
+    return String.format(
+        "{\"bidId\":\"%s\",\"auctionId\":\"%s\",\"bidderId\":\"%s\",\"amount\":\"%s\",\"currentPrice\":\"%s\"}",
+        bid.getId(), bid.getAuctionId(), bid.getBidderId(), bid.getAmount(), currentPrice);
   }
 }
