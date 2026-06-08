@@ -14,7 +14,6 @@ spring:
     enabled: true
 
 jwt:
-  #  secret: ${JWT_SECRET:dev-secret-key-must-be-at-least-32-chars!!}
-  secret: dev-secret-key
-  access-expiration-ms: 86400000    # 24 horas
-  refresh-expiration-ms: 604800000  # 7 días
+  secret: ${JWT_SECRET:dev-secret-key-must-be-at-least-32-chars!!}
+  access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:86400000}    # 24 horas
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 días
