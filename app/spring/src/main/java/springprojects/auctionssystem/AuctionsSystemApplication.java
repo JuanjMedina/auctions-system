@@ -18,7 +18,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
       "adapter",
       "config",
       "exception",
-      "usecase"
+      "user",
+      "auction",
+      "bid",
+      "wallet",
+      "outbox"
     })
 @EnableJpaRepositories(basePackages = "repository")
 @EntityScan(basePackages = "entity")
