@@ -4,6 +4,7 @@ dependencies {
     implementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-tx'
     implementation 'org.springframework.retry:spring-retry:2.0.11'
+    implementation 'org.slf4j:slf4j-api'
 
     testImplementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     testImplementation 'org.mockito:mockito-core'
