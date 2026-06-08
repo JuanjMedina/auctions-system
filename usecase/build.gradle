@@ -3,6 +3,7 @@ dependencies {
     implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     implementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-tx'
+    implementation 'org.springframework.retry:spring-retry:2.0.11'
 
     testImplementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     testImplementation 'org.mockito:mockito-core'
