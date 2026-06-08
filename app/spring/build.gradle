@@ -8,6 +8,7 @@ dependencies {
     implementation project(':domain')
     implementation project(':usecase')
     implementation project(':adapter:in:web')
+    implementation project(':adapter:in:scheduler')
     implementation project(':adapter:out:persistence')
     implementation project(':adapter:config')
     implementation project(':adapter:exception')

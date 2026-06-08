@@ -22,7 +22,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
       "auction",
       "bid",
       "wallet",
-      "outbox"
+      "outbox",
+      "scheduler"
     })
 @EnableJpaRepositories(basePackages = "repository")
 @EntityScan(basePackages = "entity")
