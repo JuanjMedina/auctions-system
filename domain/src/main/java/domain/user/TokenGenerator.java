@@ -8,4 +8,8 @@ public interface TokenGenerator {
   String generateRefreshToken(UUID userId);
 
   UUID extractUserIdFromRefreshToken(String refreshToken);
+
+  AccessTokenClaims extractClaimsFromAccessToken(String accessToken);
+
+  record AccessTokenClaims(UUID userId, String email, Role role) {}
 }

@@ -1,4 +1,4 @@
-package springprojects.auctionssystem.config;
+package config;
 
 import domain.user.UserPasswordEncoder;
 import org.springframework.context.annotation.Bean;

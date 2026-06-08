@@ -1,8 +1,7 @@
 dependencies {
     implementation project(':domain')
-    implementation project(':usecase')
-    implementation project(':adapter:in:web')
-    implementation project(':adapter:out:persistence')
     implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     implementation 'org.springframework:spring-context'
+    implementation 'org.springframework.security:spring-security-crypto'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 }

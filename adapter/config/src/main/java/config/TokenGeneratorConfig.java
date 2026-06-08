@@ -1,7 +1,8 @@
-package springprojects.auctionssystem.config;
+package config;
 
 import domain.user.Role;
 import domain.user.TokenGenerator;
+import domain.user.TokenGenerator.AccessTokenClaims;
 import domain.user.UserExceptions.InvalidRefreshTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -70,6 +71,28 @@ public class TokenGeneratorConfig {
           }
 
           return UUID.fromString(claims.getSubject());
+        } catch (JwtException | IllegalArgumentException e) {
+          throw new InvalidRefreshTokenException();
+        }
+      }
+
+      @Override
+      public AccessTokenClaims extractClaimsFromAccessToken(String accessToken) {
+        try {
+          SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+          Claims claims =
+              Jwts.parser().verifyWith(key).build().parseSignedClaims(accessToken).getPayload();
+
+          String type = claims.get("type", String.class);
+          if (!"access".equals(type)) {
+            throw new InvalidRefreshTokenException();
+          }
+
+          UUID userId = UUID.fromString(claims.getSubject());
+          String email = claims.get("email", String.class);
+          Role role = Role.valueOf(claims.get("role", String.class));
+
+          return new AccessTokenClaims(userId, email, role);
         } catch (JwtException | IllegalArgumentException e) {
           throw new InvalidRefreshTokenException();
         }
