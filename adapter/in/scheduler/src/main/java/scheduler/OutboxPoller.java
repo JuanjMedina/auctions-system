@@ -15,7 +15,9 @@ public class OutboxPoller {
 
   private final ProcessOutboxUseCase processOutboxUseCase;
 
-  @Scheduled(fixedDelay = 5000)
+  private final int DELAY_TIME = 5000; // 5 seconds
+
+  @Scheduled(fixedDelay = DELAY_TIME)
   public void poll() {
     ProcessOutboxResult result = processOutboxUseCase.run(ProcessOutboxInput.DEFAULT);
 
