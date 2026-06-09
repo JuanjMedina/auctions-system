@@ -1,0 +1,194 @@
+{
+  "info": {
+    "name": "Auctions System",
+    "_postman_id": "auctions-system-collection",
+    "description": "Colección completa de endpoints — AuctionController, BidController, UserController, WalletController",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:8080" },
+    { "key": "access_token",  "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "auction_id",    "value": "e0000000-0000-0000-0000-000000000001" },
+    { "key": "category_id",   "value": "c0000000-0000-0000-0000-000000000001" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"username\": \"myuser\",\n  \"rawPassword\": \"Password123!\",\n  \"fullName\": \"My User\",\n  \"phone\": \"+573001234567\",\n  \"role\": \"BUYER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('access_token',  json.accessToken);",
+                  "pm.collectionVariables.set('refresh_token', json.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/login" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller1@subastapp.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/refresh" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auctions",
+      "item": [
+        {
+          "name": "Create Auction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auctions" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\":    \"{{category_id}}\",\n  \"title\":         \"Nintendo Switch OLED\",\n  \"description\":   \"Nintendo Switch OLED 64GB, con estuche.\",\n  \"startingPrice\": 250.00,\n  \"reservePrice\":  300.00,\n  \"startsAt\":      \"2027-01-01T10:00:00Z\",\n  \"endsAt\":        \"2027-01-08T10:00:00Z\",\n  \"autoExtend\":    true,\n  \"extendMinutes\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Auction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auctions/{{auction_id}}",
+              "variable": [{ "key": "auction_id", "value": "{{auction_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "Publish Auction",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auctions/{{auction_id}}/publish",
+              "variable": [{ "key": "auction_id", "value": "{{auction_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "Cancel Auction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auctions/{{auction_id}}",
+              "variable": [{ "key": "auction_id", "value": "{{auction_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "Close Auction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auctions/{{auction_id}}/close",
+              "variable": [{ "key": "auction_id", "value": "{{auction_id}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bids",
+      "item": [
+        {
+          "name": "Place Bid",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auctions/{{auction_id}}/bids",
+              "variable": [{ "key": "auction_id", "value": "{{auction_id}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\":        250.00,\n  \"autoBid\":       false,\n  \"maxAutoAmount\": null\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/wallets/me" }
+          }
+        },
+        {
+          "name": "Deposit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/wallets/me/deposit" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\":      100.00,\n  \"description\": \"Recarga de prueba\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
