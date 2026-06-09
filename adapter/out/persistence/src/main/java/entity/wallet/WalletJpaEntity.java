@@ -19,9 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Builder
 public class WalletJpaEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
+  @Id private UUID id;
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false, unique = true)

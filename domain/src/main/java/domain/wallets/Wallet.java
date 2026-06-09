@@ -25,7 +25,7 @@ public class Wallet {
         .balance(BigDecimal.ZERO)
         .reservedBalance(BigDecimal.ZERO)
         .currency("USD")
-        .version(0L)
+        .version(null)
         .updatedAt(Instant.now())
         .build();
   }

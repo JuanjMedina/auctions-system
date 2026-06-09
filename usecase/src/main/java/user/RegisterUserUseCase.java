@@ -1,5 +1,6 @@
 package user;
 
+import domain.user.Role;
 import domain.user.User;
 import domain.user.UserExceptions;
 import domain.user.UserPasswordEncoder;
@@ -39,7 +40,7 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
             passwordHash,
             input.fullName(),
             input.phone(),
-            input.role());
+            resolveRole(input.role()));
 
     User savedUser = userRepository.save(user);
 
@@ -48,6 +49,15 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
 
     return new RegisterUserResult(
         savedUser.getId(), savedUser.getEmail(), savedUser.getUsername(), savedWallet.getId());
+  }
+
+  private Role resolveRole(String role) {
+    if (role == null) return Role.SELLER;
+    try {
+      return Role.valueOf(role.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return Role.SELLER;
+    }
   }
 
   @Override
