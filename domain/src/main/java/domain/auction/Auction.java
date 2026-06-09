@@ -65,7 +65,7 @@ public class Auction {
         .images(new ArrayList<>())
         .createdAt(now)
         .updatedAt(now)
-        .version(0L)
+        .version(null) // version se asignará al persistir la entidad
         .build();
   }
 
