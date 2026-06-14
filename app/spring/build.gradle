@@ -10,8 +10,8 @@ dependencies {
     implementation project(':adapter:in:web')
     implementation project(':adapter:in:scheduler')
     implementation project(':adapter:out:persistence')
-    implementation project(':adapter:config')
     implementation project(':adapter:exception')
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

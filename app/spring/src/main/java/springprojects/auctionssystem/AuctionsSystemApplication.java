@@ -16,12 +16,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
       "springprojects.auctionssystem",
       "controller",
       "adapter",
-      "config",
       "exception",
       "user",
       "auction",
       "bid",
       "wallet",
+      "category",
       "outbox",
       "scheduler",
       "security"

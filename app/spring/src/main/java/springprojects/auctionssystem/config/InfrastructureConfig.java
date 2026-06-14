@@ -1,9 +1,10 @@
-package config;
+package springprojects.auctionssystem.config;
 
 import domain.user.Role;
 import domain.user.TokenGenerator;
 import domain.user.TokenGenerator.AccessTokenClaims;
 import domain.user.UserExceptions.InvalidRefreshTokenException;
+import domain.user.UserPasswordEncoder;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -15,9 +16,10 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
-public class TokenGeneratorConfig {
+public class InfrastructureConfig {
 
   @Value("${jwt.secret}")
   private String jwtSecret;
@@ -96,6 +98,20 @@ public class TokenGeneratorConfig {
         } catch (JwtException | IllegalArgumentException e) {
           throw new InvalidRefreshTokenException();
         }
+      }
+    };
+  }
+
+  @Bean
+  public UserPasswordEncoder userPasswordEncoder() {
+    BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
+    return new UserPasswordEncoder() {
+      public String encode(String raw) {
+        return bcrypt.encode(raw);
+      }
+
+      public boolean matches(String raw, String encoded) {
+        return bcrypt.matches(raw, encoded);
       }
     };
   }
