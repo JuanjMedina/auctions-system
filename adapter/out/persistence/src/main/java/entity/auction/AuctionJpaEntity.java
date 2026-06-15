@@ -10,6 +10,7 @@ import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.domain.Persistable;
 
 @Entity
 @Table(name = "auctions")
@@ -18,10 +19,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuctionJpaEntity {
+public class AuctionJpaEntity implements Persistable<UUID> {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
@@ -87,4 +87,9 @@ public class AuctionJpaEntity {
   @Version
   @Column(name = "version", nullable = false)
   private Long version;
+
+  @Override
+  public boolean isNew() {
+    return version == null;
+  }
 }
