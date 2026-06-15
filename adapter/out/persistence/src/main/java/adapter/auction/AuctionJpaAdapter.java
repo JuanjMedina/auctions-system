@@ -12,15 +12,18 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import repository.auction.SpringDataAuctionRepository;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuctionJpaAdapter implements AuctionRepository {
 
   private final SpringDataAuctionRepository springDataRepo;
 
   @Override
+  @Transactional
   public Auction save(Auction auction) {
     try {
       return toDomain(springDataRepo.save(toJpaEntity(auction)));

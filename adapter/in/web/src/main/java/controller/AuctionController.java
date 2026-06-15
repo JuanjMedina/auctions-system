@@ -44,7 +44,7 @@ public class AuctionController {
   private final CloseAuctionUseCase closeAuctionUseCase;
 
   @PostMapping
-  @PreAuthorize("hasRole('SELLER')")
+  @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
   public ResponseEntity<CreateAuctionResult> create(
       @Valid @RequestBody CreateAuctionRequest request) {
     UUID sellerId = SecurityUtils.currentUserId();
