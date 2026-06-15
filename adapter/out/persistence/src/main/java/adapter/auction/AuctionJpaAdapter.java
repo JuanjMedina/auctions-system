@@ -26,7 +26,7 @@ public class AuctionJpaAdapter implements AuctionRepository {
   @Transactional
   public Auction save(Auction auction) {
     try {
-      return toDomain(springDataRepo.save(toJpaEntity(auction)));
+      return toDomain(springDataRepo.saveAndFlush(toJpaEntity(auction)));
     } catch (OptimisticLockingFailureException e) {
       throw new ConcurrencyException("Auction", auction.getId());
     }
