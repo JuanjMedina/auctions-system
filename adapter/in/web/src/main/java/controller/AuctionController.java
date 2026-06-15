@@ -69,14 +69,14 @@ public class AuctionController {
   }
 
   @PatchMapping("/{id}/publish")
-  @PreAuthorize("hasRole('SELLER')")
+  @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
   public ResponseEntity<PublishAuctionResult> publish(@PathVariable UUID id) {
     UUID sellerId = SecurityUtils.currentUserId();
     return ResponseEntity.ok(publishAuctionUseCase.run(new PublishAuctionInput(id, sellerId)));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('SELLER')")
+  @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
   public ResponseEntity<CancelAuctionResult> cancel(@PathVariable UUID id) {
     UUID sellerId = SecurityUtils.currentUserId();
     return ResponseEntity.ok(cancelAuctionUseCase.run(new CancelAuctionInput(id, sellerId)));
