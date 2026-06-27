@@ -3,14 +3,22 @@ package adapter.auction;
 import domain.auction.Auction;
 import domain.auction.AuctionImage;
 import domain.auction.AuctionRepository;
+import domain.auction.AuctionStatus;
 import domain.shared.ConcurrencyException;
+import domain.shared.PageResult;
 import entity.auction.AuctionImageJpaEntity;
 import entity.auction.AuctionJpaEntity;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import repository.auction.SpringDataAuctionRepository;
@@ -35,6 +43,31 @@ public class AuctionJpaAdapter implements AuctionRepository {
   @Override
   public Optional<Auction> findById(UUID id) {
     return springDataRepo.findById(id).map(this::toDomain);
+  }
+
+  @Override
+  public PageResult<Auction> findAll(
+      Optional<AuctionStatus> status, Optional<UUID> categoryId, int page, int size) {
+
+    Specification<AuctionJpaEntity> spec =
+        (root, query, cb) -> {
+          List<Predicate> predicates = new ArrayList<>();
+          status.ifPresent(s -> predicates.add(cb.equal(root.get("status"), s)));
+          categoryId.ifPresent(c -> predicates.add(cb.equal(root.get("categoryId"), c)));
+          return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    Page<AuctionJpaEntity> result = springDataRepo.findAll(spec, pageRequest);
+
+    List<Auction> content = result.getContent().stream().map(this::toDomain).toList();
+
+    return new PageResult<>(
+        content,
+        result.getTotalElements(),
+        result.getTotalPages(),
+        result.getNumber(),
+        result.getSize());
   }
 
   @Override

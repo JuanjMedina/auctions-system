@@ -5,12 +5,14 @@ import entity.auction.AuctionJpaEntity;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SpringDataAuctionRepository extends JpaRepository<AuctionJpaEntity, UUID> {
+public interface SpringDataAuctionRepository
+    extends JpaRepository<AuctionJpaEntity, UUID>, JpaSpecificationExecutor<AuctionJpaEntity> {
 
   // Subastas ACTIVE o EXTENDED cuyo ends_at ya paso
   @Query(
