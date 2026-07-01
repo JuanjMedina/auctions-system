@@ -39,7 +39,7 @@ class RegisterUserUseCaseTest {
 
   private RegisterUserInput validInput() {
     return new RegisterUserInput(
-        EMAIL, USERNAME, RAW_PASSWORD, "Juan Test", "555-0000", Role.BUYER);
+        EMAIL, USERNAME, RAW_PASSWORD, "Juan Test", "555-0000", Role.BUYER.toString());
   }
 
   private void setupHappyPath() {

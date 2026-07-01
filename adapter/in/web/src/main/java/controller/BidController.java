@@ -25,7 +25,7 @@ public class BidController {
   private final PlaceBidUseCase placeBidUseCase;
 
   @PostMapping
-  @PreAuthorize("hasRole('BUYER')")
+  @PreAuthorize("hasRole('BUYER') or hasRole('ADMIN')")
   public ResponseEntity<PlaceBidOutput> placeBid(
       @PathVariable UUID auctionId, @Valid @RequestBody PlaceBidRequest request) {
     UUID bidderId = SecurityUtils.currentUserId();

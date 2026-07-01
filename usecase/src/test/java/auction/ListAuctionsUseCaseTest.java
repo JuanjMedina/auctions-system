@@ -27,11 +27,11 @@ class ListAuctionsUseCaseTest {
 
   @InjectMocks private ListAuctionsUseCase useCase;
 
-  private Auction buildAuction(AuctionStatus status) {
+  private Auction buildAuction(AuctionStatus status, UUID categoryId) {
     return Auction.reconstitute(
         UUID.randomUUID(),
         UUID.randomUUID(),
-        UUID.randomUUID(),
+        categoryId,
         "Subasta test",
         "Descripcion",
         BigDecimal.TEN,
@@ -58,7 +58,9 @@ class ListAuctionsUseCaseTest {
   void execute_noFilters_returnsFirstPageOfAuctions() {
     // arrange
     List<Auction> actions =
-        List.of(buildAuction(AuctionStatus.ACTIVE), buildAuction(AuctionStatus.CLOSED));
+        List.of(
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()),
+            buildAuction(AuctionStatus.CLOSED, UUID.randomUUID()));
 
     PageResult<Auction> pageResult = new PageResult<>(actions, 15L, 2, 0, 10);
 
@@ -82,12 +84,11 @@ class ListAuctionsUseCaseTest {
   @Test
   void execute_filterByStatus_returnsOnlyMatchingAuctions() {
     // arrange
-
     List<Auction> actions =
         List.of(
-            buildAuction(AuctionStatus.ACTIVE),
-            buildAuction(AuctionStatus.ACTIVE),
-            buildAuction(AuctionStatus.ACTIVE));
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()),
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()),
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()));
 
     PageResult<Auction> pageResult = new PageResult<>(actions, 3L, 1, 0, 10);
 
@@ -112,10 +113,26 @@ class ListAuctionsUseCaseTest {
   @Test
   void execute_filterByCategoryId_returnsOnlyMatchingAuctions() {
     // arrange
+    UUID categoryId = UUID.randomUUID();
+    PageResult<Auction> pageResult =
+        new PageResult<>(
+            List.of(
+                buildAuction(AuctionStatus.ACTIVE, categoryId),
+                buildAuction(AuctionStatus.SCHEDULED, categoryId)),
+            2L,
+            1,
+            0,
+            10);
+
+    when(auctionRepository.findAll(Optional.empty(), Optional.of(categoryId), 0, 10))
+        .thenReturn(pageResult);
 
     // act
+    ListAuctionsResult result =
+        useCase.run(new ListAuctionsInput(Optional.empty(), Optional.of(categoryId), 0, 10));
 
     // assert
+    assertThat(result.page().content()).hasSize(2).allMatch(s -> s.categoryId().equals(categoryId));
   }
 
   // --- combinación de filtros ---
@@ -123,10 +140,31 @@ class ListAuctionsUseCaseTest {
   @Test
   void execute_filterByStatusAndCategory_returnsMatchingAuctions() {
     // arrange
+    UUID categoryId = UUID.randomUUID();
+    PageResult<Auction> pageResult =
+        new PageResult<>(
+            List.of(
+                buildAuction(AuctionStatus.ACTIVE, categoryId),
+                buildAuction(AuctionStatus.ACTIVE, categoryId)),
+            2L,
+            1,
+            0,
+            10);
+
+    when(auctionRepository.findAll(
+            Optional.of(AuctionStatus.ACTIVE), Optional.of(categoryId), 0, 10))
+        .thenReturn(pageResult);
 
     // act
+    ListAuctionsResult result =
+        useCase.run(
+            new ListAuctionsInput(
+                Optional.of(AuctionStatus.ACTIVE), Optional.of(categoryId), 0, 10));
 
     // assert
+    assertThat(result.page().content())
+        .hasSize(2)
+        .allMatch(s -> s.categoryId().equals(categoryId) && s.status() == AuctionStatus.ACTIVE);
   }
 
   // --- paginación ---
@@ -134,18 +172,47 @@ class ListAuctionsUseCaseTest {
   @Test
   void execute_secondPage_returnsCorrectContent() {
     // arrange
+    List<Auction> secondPageContent =
+        List.of(
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()),
+            buildAuction(AuctionStatus.CLOSED, UUID.randomUUID()),
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()),
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()),
+            buildAuction(AuctionStatus.ACTIVE, UUID.randomUUID()));
 
+    PageResult<Auction> pageResult = new PageResult<>(secondPageContent, 15L, 2, 1, 5);
+
+    when(auctionRepository.findAll(Optional.empty(), Optional.empty(), 1, 5))
+        .thenReturn(pageResult);
     // act
 
+    ListAuctionsResult result =
+        useCase.run(new ListAuctionsInput(Optional.empty(), Optional.empty(), 1, 5));
+
     // assert
+    assertThat(result.page().content()).hasSize(5);
+    assertThat(result.page().currentPage()).isEqualTo(1);
+    assertThat(result.page().totalElements()).isEqualTo(15L);
+    assertThat(result.page().hasNext()).isFalse();
+    assertThat(result.page().hasPrevious()).isTrue();
   }
 
   @Test
   void execute_emptyResult_returnsEmptyPage() {
     // arrange
+    PageResult<Auction> pageResult = new PageResult<>(List.of(), 0L, 0, 0, 10);
+
+    when(auctionRepository.findAll(Optional.empty(), Optional.empty(), 0, 10))
+        .thenReturn(pageResult);
 
     // act
+    ListAuctionsResult result =
+        useCase.run(new ListAuctionsInput(Optional.empty(), Optional.empty(), 0, 10));
 
     // assert
+    assertThat(result.page().content()).isEmpty();
+    assertThat(result.page().totalElements()).isZero();
+    assertThat(result.page().hasNext()).isFalse();
+    assertThat(result.page().hasPrevious()).isFalse();
   }
 }
