@@ -4,19 +4,24 @@ import auction.CancelAuctionUseCase;
 import auction.CloseAuctionUseCase;
 import auction.CreateAuctionUseCase;
 import auction.GetAuctionUseCase;
+import auction.ListAuctionsUseCase;
 import auction.PublishAuctionUseCase;
 import auction.input.CancelAuctionInput;
 import auction.input.CloseAuctionInput;
 import auction.input.CreateAuctionInput;
 import auction.input.GetAuctionInput;
+import auction.input.ListAuctionsInput;
 import auction.input.PublishAuctionInput;
 import auction.output.CancelAuctionResult;
 import auction.output.CloseAuctionResult;
 import auction.output.CreateAuctionResult;
 import auction.output.GetAuctionResult;
+import auction.output.ListAuctionsResult;
 import auction.output.PublishAuctionResult;
 import controller.dto.request.CreateAuctionRequest;
+import domain.auction.AuctionStatus;
 import jakarta.validation.Valid;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import security.SecurityUtils;
 
@@ -42,6 +48,7 @@ public class AuctionController {
   private final PublishAuctionUseCase publishAuctionUseCase;
   private final CancelAuctionUseCase cancelAuctionUseCase;
   private final CloseAuctionUseCase closeAuctionUseCase;
+  private final ListAuctionsUseCase listAuctionsUseCase;
 
   @PostMapping
   @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
@@ -86,5 +93,17 @@ public class AuctionController {
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CloseAuctionResult> close(@PathVariable UUID id) {
     return ResponseEntity.ok(closeAuctionUseCase.run(new CloseAuctionInput(id)));
+  }
+
+  @GetMapping()
+  public ResponseEntity<ListAuctionsResult> listAuctions(
+      @RequestParam(required = false) AuctionStatus status,
+      @RequestParam(required = false) UUID categoryId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    ListAuctionsInput input =
+        new ListAuctionsInput(
+            Optional.ofNullable(status), Optional.ofNullable(categoryId), page, size);
+    return ResponseEntity.ok(listAuctionsUseCase.run(input));
   }
 }
