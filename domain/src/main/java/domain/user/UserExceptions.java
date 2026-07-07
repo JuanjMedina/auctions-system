@@ -1,5 +1,7 @@
 package domain.user;
 
+import java.util.UUID;
+
 public final class UserExceptions {
 
   private UserExceptions() {}
@@ -52,6 +54,25 @@ public final class UserExceptions {
   public static class InvalidRefreshTokenException extends RuntimeException {
     public InvalidRefreshTokenException() {
       super("El refresh token es inválido o ha expirado");
+    }
+  }
+
+  public static class UserNotFoundException extends RuntimeException {
+    private final UUID userId;
+
+    public UserNotFoundException(UUID userId) {
+      super("Usuario no encontrado: " + userId);
+      this.userId = userId;
+    }
+
+    public UUID getUserId() {
+      return userId;
+    }
+  }
+
+  public static class InvalidCurrentPasswordException extends RuntimeException {
+    public InvalidCurrentPasswordException() {
+      super("La contraseña actual no es correcta");
     }
   }
 }

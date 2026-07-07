@@ -54,4 +54,23 @@ public class UserExceptionHandler {
     problem.setDetail(ex.getMessage());
     return problem;
   }
+
+  @ExceptionHandler(UserExceptions.UserNotFoundException.class)
+  public ProblemDetail handleUserNotFound(UserExceptions.UserNotFoundException ex) {
+    ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+    problem.setType(URI.create("urn:problem:user-not-found"));
+    problem.setTitle("Usuario no encontrado");
+    problem.setDetail(ex.getMessage());
+    return problem;
+  }
+
+  @ExceptionHandler(UserExceptions.InvalidCurrentPasswordException.class)
+  public ProblemDetail handleInvalidCurrentPassword(
+      UserExceptions.InvalidCurrentPasswordException ex) {
+    ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+    problem.setType(URI.create("urn:problem:invalid-current-password"));
+    problem.setTitle("Contraseña actual incorrecta");
+    problem.setDetail(ex.getMessage());
+    return problem;
+  }
 }

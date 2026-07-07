@@ -66,4 +66,25 @@ public class User {
         .updatedAt(updatedAt)
         .build();
   }
+
+  public void updateProfile(String fullName, String phone) {
+    this.fullName = fullName;
+    this.phone = phone;
+    this.updatedAt = Instant.now();
+  }
+
+  public void changeEmail(String newEmail) {
+    this.email = newEmail;
+    this.updatedAt = Instant.now();
+  }
+
+  public void changeUsername(String newUsername) {
+    this.username = newUsername;
+    this.updatedAt = Instant.now();
+  }
+
+  public void changePassword(String newPasswordHash) {
+    this.passwordHash = newPasswordHash;
+    this.updatedAt = Instant.now();
+  }
 }
