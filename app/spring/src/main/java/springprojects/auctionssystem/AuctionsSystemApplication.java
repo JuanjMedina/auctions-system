@@ -24,7 +24,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
       "category",
       "outbox",
       "scheduler",
-      "security"
+      "security",
+      "watchList"
     })
 @EnableJpaRepositories(basePackages = "repository")
 @EntityScan(basePackages = "entity")

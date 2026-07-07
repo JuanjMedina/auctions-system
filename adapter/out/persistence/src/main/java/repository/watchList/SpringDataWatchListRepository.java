@@ -10,11 +10,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataWatchListRepository extends JpaRepository<WatchListJpaEntity, UUID> {
 
-  Optional<WatchListJpaEntity> findByUser_IdAndAuction_Id(UUID userId, UUID auctionId);
+  Optional<WatchListJpaEntity> findByUserIdAndAuctionId(UUID userId, UUID auctionId);
 
-  List<WatchListJpaEntity> findByUser_IdOrderByAddedAtDesc(UUID userId);
+  List<WatchListJpaEntity> findByUserIdOrderByAddedAtDesc(UUID userId);
 
-  List<WatchListJpaEntity> findByAuction_Id(UUID auctionId);
+  List<WatchListJpaEntity> findByAuctionId(UUID auctionId);
 
-  boolean existsByUser_IdAndAuction_Id(UUID userId, UUID auctionId);
+  boolean existsByUserIdAndAuctionId(UUID userId, UUID auctionId);
 }

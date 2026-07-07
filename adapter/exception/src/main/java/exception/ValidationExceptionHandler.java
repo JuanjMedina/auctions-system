@@ -3,6 +3,8 @@ package exception;
 import domain.shared.ConcurrencyException;
 import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
 public class ValidationExceptionHandler {
 
   @ExceptionHandler(ConcurrencyException.class)
