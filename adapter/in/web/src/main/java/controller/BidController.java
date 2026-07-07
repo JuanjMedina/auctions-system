@@ -1,7 +1,10 @@
 package controller;
 
+import bid.ListBidsUseCase;
 import bid.PlaceBidUseCase;
+import bid.input.ListBidsInput;
 import bid.input.PlaceBidInput;
+import bid.output.ListBidsResult;
 import bid.output.PlaceBidOutput;
 import controller.dto.request.PlaceBidRequest;
 import jakarta.validation.Valid;
@@ -10,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +27,7 @@ import security.SecurityUtils;
 public class BidController {
 
   private final PlaceBidUseCase placeBidUseCase;
+  private final ListBidsUseCase listBidsUseCase;
 
   @PostMapping
   @PreAuthorize("hasRole('BUYER') or hasRole('ADMIN')")
@@ -33,5 +38,10 @@ public class BidController {
         new PlaceBidInput(
             auctionId, bidderId, request.amount(), request.autoBid(), request.maxAutoAmount());
     return ResponseEntity.status(HttpStatus.CREATED).body(placeBidUseCase.run(input));
+  }
+
+  @GetMapping
+  public ResponseEntity<ListBidsResult> listBids(@PathVariable UUID auctionId) {
+    return ResponseEntity.ok(listBidsUseCase.run(new ListBidsInput(auctionId)));
   }
 }
