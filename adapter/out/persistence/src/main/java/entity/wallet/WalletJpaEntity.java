@@ -45,11 +45,7 @@ public class WalletJpaEntity {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  @OneToMany(
-      mappedBy = "wallet",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true,
-      fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY)
   @Builder.Default
   private List<WalletTransactionJpaEntity> transactions = new ArrayList<>();
 }

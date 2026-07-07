@@ -2,12 +2,14 @@ package exception;
 
 import domain.wallets.WalletExceptions;
 import java.net.URI;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Order(0)
 public class WalletExceptionHandler {
 
   @ExceptionHandler(WalletExceptions.WalletNotFoundException.class)
