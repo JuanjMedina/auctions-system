@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "spring-boot",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "gradlew.bat", ":app:spring:bootRun"],
+      "port": 8080
+    }
+  ]
+}
