@@ -19,7 +19,7 @@ import auction.PublishAuctionUseCase;
 import auction.input.ListAuctionsInput;
 import auction.output.AuctionSummary;
 import auction.output.ListAuctionsResult;
-import controller.AuctionController;
+import controller.auction.AuctionController;
 import domain.auction.AuctionStatus;
 import domain.shared.PageResult;
 import domain.user.TokenGenerator;

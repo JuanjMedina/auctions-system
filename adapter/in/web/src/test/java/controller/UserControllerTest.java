@@ -8,9 +8,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import controller.dto.request.LoginRequest;
-import controller.dto.request.RefreshTokenRequest;
-import controller.dto.request.RegisterRequest;
+import controller.user.UserController;
+import controller.user.dto.LoginRequest;
+import controller.user.dto.RefreshTokenRequest;
+import controller.user.dto.RegisterRequest;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package controller;
+package controller.user;
 
 import auction.ListMyAuctionsUseCase;
 import auction.input.ListMyAuctionsInput;

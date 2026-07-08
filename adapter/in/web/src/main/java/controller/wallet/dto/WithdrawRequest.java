@@ -1,7 +1,7 @@
-package controller.dto.request;
+package controller.wallet.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
-public record DepositRequest(@NotNull @Positive BigDecimal amount, String description) {}
+public record WithdrawRequest(@NotNull @Positive BigDecimal amount, String description) {}

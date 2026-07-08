@@ -10,8 +10,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import controller.dto.request.ChangePasswordRequest;
-import controller.dto.request.UpdateProfileRequest;
+import controller.user.UserProfileController;
+import controller.user.dto.ChangePasswordRequest;
+import controller.user.dto.UpdateProfileRequest;
 import domain.user.Role;
 import java.time.Instant;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package controller.dto.request;
+package controller.user.dto;
 
 import jakarta.validation.constraints.Email;
 

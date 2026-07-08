@@ -1,4 +1,4 @@
-package controller;
+package controller.category;
 
 import category.CreateCategoryUseCase;
 import category.GetCategoryUseCase;
@@ -6,7 +6,7 @@ import category.input.CreateCategoryInput;
 import category.input.GetCategoryInput;
 import category.output.CreateCategoryResult;
 import category.output.GetCategoryResult;
-import controller.dto.request.CreateCategoryRequest;
+import controller.category.dto.CreateCategoryRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ public class CategoryController {
 
   private final CreateCategoryUseCase createCategoryUseCase;
   private final GetCategoryUseCase getCategoryUseCase;
+  private final ListCategoriesUseCase listCategoriesUseCase;
 
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
@@ -41,4 +42,8 @@ public class CategoryController {
   public ResponseEntity<GetCategoryResult> get(@PathVariable UUID id) {
     return ResponseEntity.ok(getCategoryUseCase.run(new GetCategoryInput(id)));
   }
+
+  @GetMapping
+  public ResponseEntity<?> listCategories() {}
+  ;
 }

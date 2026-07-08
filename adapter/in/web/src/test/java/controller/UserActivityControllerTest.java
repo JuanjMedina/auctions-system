@@ -17,6 +17,7 @@ import bid.ListMyBidsUseCase;
 import bid.input.ListMyBidsInput;
 import bid.output.ListMyBidsResult;
 import bid.output.ListMyBidsResult.MyBidSummary;
+import controller.user.UserActivityController;
 import domain.auction.AuctionStatus;
 import domain.bid.BidStatus;
 import java.math.BigDecimal;

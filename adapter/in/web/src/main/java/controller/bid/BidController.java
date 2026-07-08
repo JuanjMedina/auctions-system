@@ -1,4 +1,4 @@
-package controller;
+package controller.bid;
 
 import bid.ListBidsUseCase;
 import bid.PlaceBidUseCase;
@@ -6,7 +6,7 @@ import bid.input.ListBidsInput;
 import bid.input.PlaceBidInput;
 import bid.output.ListBidsResult;
 import bid.output.PlaceBidOutput;
-import controller.dto.request.PlaceBidRequest;
+import controller.bid.dto.PlaceBidRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

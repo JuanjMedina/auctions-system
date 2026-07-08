@@ -1,4 +1,4 @@
-package controller.dto.request;
+package controller.auction.dto;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;

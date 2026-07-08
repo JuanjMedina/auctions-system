@@ -1,7 +1,7 @@
-package controller;
+package controller.wallet;
 
-import controller.dto.request.DepositRequest;
-import controller.dto.request.WithdrawRequest;
+import controller.wallet.dto.DepositRequest;
+import controller.wallet.dto.WithdrawRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package controller;
+package controller.auction;
 
 import auction.CancelAuctionUseCase;
 import auction.CloseAuctionUseCase;
@@ -18,7 +18,7 @@ import auction.output.CreateAuctionResult;
 import auction.output.GetAuctionResult;
 import auction.output.ListAuctionsResult;
 import auction.output.PublishAuctionResult;
-import controller.dto.request.CreateAuctionRequest;
+import controller.auction.dto.CreateAuctionRequest;
 import domain.auction.AuctionStatus;
 import jakarta.validation.Valid;
 import java.util.Optional;

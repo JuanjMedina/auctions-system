@@ -1,4 +1,4 @@
-package controller;
+package controller.watchlist;
 
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

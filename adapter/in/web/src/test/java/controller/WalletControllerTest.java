@@ -10,8 +10,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import controller.dto.request.DepositRequest;
-import controller.dto.request.WithdrawRequest;
+import controller.wallet.WalletController;
+import controller.wallet.dto.DepositRequest;
+import controller.wallet.dto.WithdrawRequest;
 import domain.wallets.TransactionType;
 import java.math.BigDecimal;
 import java.time.Instant;

@@ -1,7 +1,7 @@
-package controller;
+package controller.user;
 
-import controller.dto.request.ChangePasswordRequest;
-import controller.dto.request.UpdateProfileRequest;
+import controller.user.dto.ChangePasswordRequest;
+import controller.user.dto.UpdateProfileRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

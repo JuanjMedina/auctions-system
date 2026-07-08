@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import auction.output.AuctionSummary;
+import controller.watchlist.WatchListController;
 import domain.auction.AuctionStatus;
 import java.math.BigDecimal;
 import java.time.Instant;

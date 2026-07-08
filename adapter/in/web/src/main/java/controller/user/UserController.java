@@ -1,8 +1,8 @@
-package controller;
+package controller.user;
 
-import controller.dto.request.LoginRequest;
-import controller.dto.request.RefreshTokenRequest;
-import controller.dto.request.RegisterRequest;
+import controller.user.dto.LoginRequest;
+import controller.user.dto.RefreshTokenRequest;
+import controller.user.dto.RegisterRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
