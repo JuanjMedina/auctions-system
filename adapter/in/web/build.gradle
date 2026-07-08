@@ -13,4 +13,5 @@ dependencies {
 
     testImplementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.hibernate.validator:hibernate-validator'
 }

@@ -168,7 +168,7 @@ class AuctionControllerTest {
             "Descripcion",
             BigDecimal.TEN,
             BigDecimal.valueOf(20),
-            Instant.now(),
+            Instant.now().plusSeconds(60),
             Instant.now().plusSeconds(3600),
             true,
             10);
