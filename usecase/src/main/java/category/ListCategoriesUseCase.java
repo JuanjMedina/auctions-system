@@ -7,16 +7,17 @@ import domain.categories.CategoryRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import shared.NoInput;
 import shared.UseCase;
 
 @Service
 @RequiredArgsConstructor
-public class ListCategoryUseCase implements UseCase<String, ListActiveCategoriesResult> {
+public class ListCategoriesUseCase implements UseCase<NoInput, ListActiveCategoriesResult> {
 
   private final CategoryRepository categoryRepository;
 
   @Override
-  public ListActiveCategoriesResult execute(String input) {
+  public ListActiveCategoriesResult execute(NoInput input) {
 
     List<Category> categoriesList = categoryRepository.findAllActive();
 
@@ -43,6 +44,6 @@ public class ListCategoryUseCase implements UseCase<String, ListActiveCategories
   public ListActiveCategoriesResult failed(Exception exception) {
     throw exception instanceof RuntimeException re
         ? re
-        : new RuntimeException("Error al obtener la categoría", exception);
+        : new RuntimeException("Error al obtener las categorias", exception);
   }
 }

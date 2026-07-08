@@ -2,10 +2,12 @@ package controller.category;
 
 import category.CreateCategoryUseCase;
 import category.GetCategoryUseCase;
+import category.ListCategoriesUseCase;
 import category.input.CreateCategoryInput;
 import category.input.GetCategoryInput;
 import category.output.CreateCategoryResult;
 import category.output.GetCategoryResult;
+import category.output.ListActiveCategoriesResult;
 import controller.category.dto.CreateCategoryRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import shared.NoInput;
 
 @RestController
 @RequestMapping("/categories")
@@ -44,6 +47,7 @@ public class CategoryController {
   }
 
   @GetMapping
-  public ResponseEntity<?> listCategories() {}
-  ;
+  public ResponseEntity<ListActiveCategoriesResult> listCategories() {
+    return ResponseEntity.ok(listCategoriesUseCase.run(NoInput.INSTANCE));
+  }
 }
