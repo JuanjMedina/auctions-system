@@ -1,14 +1,65 @@
 plugins {
     id 'com.diffplug.spotless' version '7.0.4' apply false
+    id 'jacoco'
 }
+
+
 
 group = 'spring-projects'
 version = '0.0.1-SNAPSHOT'
 description = 'auctions-system'
 
+repositories {
+    mavenCentral()
+}
+
+def coverageExclusions = [
+        '**/*Application.class',
+        '**/*Config.class',
+        '**/dto/**',
+        '**/config/**'
+]
+
+tasks.register('codeCoverageReport', JacocoReport) {
+    group = 'verification'
+    description = 'Reporte de cobertura agregado de todos los módulos'
+}
+
+gradle.projectsEvaluated {
+    def testedProjects = subprojects.findAll { it.tasks.findByName('test') }
+
+    codeCoverageReport.configure {
+        dependsOn testedProjects.collect { it.tasks.named('test') }
+
+        sourceDirectories.setFrom(
+                files(testedProjects.collect { it.sourceSets.main.allSource.srcDirs })
+        )
+
+        classDirectories.setFrom(
+                files(testedProjects.collectMany { proj ->
+                    proj.sourceSets.main.output.classesDirs.files.collect { dir ->
+                        fileTree(dir: dir, exclude: coverageExclusions)
+                    }
+                })
+        )
+
+        executionData.setFrom(
+                files(testedProjects.collect { proj ->
+                    new File(proj.buildDir, 'jacoco/test.exec')
+                }.findAll { it.exists() })
+        )
+
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+}
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'jacoco'
 
     spotless {
         java {
@@ -44,5 +95,45 @@ subprojects {
 
     tasks.named('test') {
         useJUnitPlatform()
+    }
+
+    tasks.named('test') {
+        finalizedBy tasks.named('jacocoTestReport')
+    }
+
+
+    tasks.named('jacocoTestReport') {
+        dependsOn tasks.named('test')
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+
+    tasks.named('jacocoTestCoverageVerification') {
+        dependsOn tasks.named('jacocoTestReport')
+        violationRules {
+            rule {
+                limit {
+                    minimum = 0.70
+                }
+            }
+        }
+    }
+
+    afterEvaluate {
+        [tasks.named('jacocoTestReport'), tasks.named('jacocoTestCoverageVerification')].each { taskProvider ->
+            taskProvider.configure {
+                classDirectories.setFrom(
+                        files(classDirectories.files.collect {
+                            fileTree(dir: it, exclude: coverageExclusions)
+                        })
+                )
+            }
+        }
+    }
+
+    tasks.named('check') {
+        dependsOn tasks.named('jacocoTestCoverageVerification')
     }
 }
