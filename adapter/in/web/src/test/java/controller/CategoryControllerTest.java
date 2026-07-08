@@ -11,12 +11,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import category.CreateCategoryUseCase;
 import category.GetCategoryUseCase;
+import category.ListCategoriesUseCase;
 import category.input.CreateCategoryInput;
 import category.input.GetCategoryInput;
 import category.output.CreateCategoryResult;
 import category.output.GetCategoryResult;
+import category.output.ListActiveCategoriesResult;
 import controller.category.CategoryController;
 import controller.category.dto.CreateCategoryRequest;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +41,7 @@ class CategoryControllerTest {
 
   @Mock private CreateCategoryUseCase createCategoryUseCase;
   @Mock private GetCategoryUseCase getCategoryUseCase;
+  @Mock private ListCategoriesUseCase listCategoriesUseCase;
 
   private MockMvc mockMvc;
 
@@ -46,7 +50,7 @@ class CategoryControllerTest {
   @BeforeEach
   void setUp() {
     CategoryController controller =
-        new CategoryController(createCategoryUseCase, getCategoryUseCase);
+        new CategoryController(createCategoryUseCase, getCategoryUseCase, listCategoriesUseCase);
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setValidator(
@@ -125,5 +129,33 @@ class CategoryControllerTest {
     ArgumentCaptor<GetCategoryInput> captor = ArgumentCaptor.forClass(GetCategoryInput.class);
     verify(getCategoryUseCase).run(captor.capture());
     assertThat(captor.getValue().categoryId()).isEqualTo(categoryId);
+  }
+
+  @Test
+  void listCategories_withActiveCategories_returnsOk() throws Exception {
+    UUID categoryId = UUID.randomUUID();
+    GetCategoryResult category =
+        new GetCategoryResult(categoryId, "Electronics", "electronics", null, true);
+    ListActiveCategoriesResult result = new ListActiveCategoriesResult(List.of(category));
+
+    when(listCategoriesUseCase.run(any())).thenReturn(result);
+
+    mockMvc
+        .perform(get("/categories"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.categories").isArray())
+        .andExpect(jsonPath("$.categories[0].id").value(categoryId.toString()))
+        .andExpect(jsonPath("$.categories[0].name").value("Electronics"));
+  }
+
+  @Test
+  void listCategories_noActiveCategories_returnsEmptyArray() throws Exception {
+    when(listCategoriesUseCase.run(any())).thenReturn(new ListActiveCategoriesResult(List.of()));
+
+    mockMvc
+        .perform(get("/categories"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.categories").isArray())
+        .andExpect(jsonPath("$.categories").isEmpty());
   }
 }
