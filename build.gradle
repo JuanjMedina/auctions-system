@@ -20,9 +20,16 @@ def coverageExclusions = [
         '**/config/**'
 ]
 
-tasks.register('codeCoverageReport', JacocoReport) {
+def architectureGroups = [
+        domain : [':domain'],
+        usecase: [':usecase'],
+        adapter: [':adapter:in:web', ':adapter:in:scheduler', ':adapter:out:persistence', ':adapter:exception'],
+        app    : [':app:spring']
+]
+
+tasks.register('codeCoverageReport') {
     group = 'verification'
-    description = 'Reporte de cobertura agregado de todos los módulos'
+    description = 'Reporte de cobertura unico, agrupado por capa de arquitectura'
 }
 
 gradle.projectsEvaluated {
@@ -31,27 +38,59 @@ gradle.projectsEvaluated {
     codeCoverageReport.configure {
         dependsOn testedProjects.collect { it.tasks.named('test') }
 
-        sourceDirectories.setFrom(
-                files(testedProjects.collect { it.sourceSets.main.allSource.srcDirs })
-        )
+        def reportDir = layout.buildDirectory.dir('reports/jacoco/codeCoverageReport').get().asFile
+        outputs.dir(reportDir)
 
-        classDirectories.setFrom(
-                files(testedProjects.collectMany { proj ->
-                    proj.sourceSets.main.output.classesDirs.files.collect { dir ->
-                        fileTree(dir: dir, exclude: coverageExclusions)
+        doLast {
+            ant.taskdef(
+                    name: 'jacocoReport',
+                    classname: 'org.jacoco.ant.ReportTask',
+                    classpath: configurations.jacocoAnt.asPath
+            )
+
+            reportDir.deleteDir()
+            reportDir.mkdirs()
+
+            ant.jacocoReport {
+                structure(name: 'auctions-system') {
+                    architectureGroups.each { layerName, paths ->
+                        def groupProjects = paths.collect { project(it) }
+
+                        group(name: layerName) {
+                            classfiles {
+                                groupProjects.each { proj ->
+                                    proj.sourceSets.main.output.classesDirs.files.each { dir ->
+                                        if (dir.exists()) {
+                                            fileset(dir: dir) {
+                                                coverageExclusions.each { excl -> exclude(name: excl) }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            sourcefiles {
+                                groupProjects.each { proj ->
+                                    proj.sourceSets.main.allSource.srcDirs.each { dir ->
+                                        if (dir.exists()) {
+                                            fileset(dir: dir)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                })
-        )
-
-        executionData.setFrom(
-                files(testedProjects.collect { proj ->
-                    new File(proj.buildDir, 'jacoco/test.exec')
-                }.findAll { it.exists() })
-        )
-
-        reports {
-            xml.required.set(true)
-            html.required.set(true)
+                }
+                executiondata {
+                    testedProjects.each { proj ->
+                        def execFile = new File(proj.buildDir, 'jacoco/test.exec')
+                        if (execFile.exists()) {
+                            fileset(dir: execFile.parentFile, includes: execFile.name)
+                        }
+                    }
+                }
+                html(destdir: new File(reportDir, 'html'))
+                xml(destfile: new File(reportDir, 'codeCoverageReport.xml'))
+            }
         }
     }
 }
