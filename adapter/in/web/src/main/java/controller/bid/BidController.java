@@ -1,9 +1,12 @@
 package controller.bid;
 
+import bid.DeleteBidUseCase;
 import bid.ListBidsUseCase;
 import bid.PlaceBidUseCase;
+import bid.input.DeleteBidInput;
 import bid.input.ListBidsInput;
 import bid.input.PlaceBidInput;
+import bid.output.DeleteBidOutput;
 import bid.output.ListBidsResult;
 import bid.output.PlaceBidOutput;
 import controller.bid.dto.PlaceBidRequest;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +32,7 @@ public class BidController {
 
   private final PlaceBidUseCase placeBidUseCase;
   private final ListBidsUseCase listBidsUseCase;
+  private final DeleteBidUseCase deleteBidUseCase;
 
   @PostMapping
   @PreAuthorize("hasRole('BUYER') or hasRole('ADMIN')")
@@ -43,5 +48,14 @@ public class BidController {
   @GetMapping
   public ResponseEntity<ListBidsResult> listBids(@PathVariable UUID auctionId) {
     return ResponseEntity.ok(listBidsUseCase.run(new ListBidsInput(auctionId)));
+  }
+
+  @DeleteMapping("/{bidId}")
+  @PreAuthorize("hasRole('BUYER') or hasRole('ADMIN')")
+  public ResponseEntity<DeleteBidOutput> deleteBid(
+      @PathVariable UUID auctionId, @PathVariable UUID bidId) {
+    UUID bidderId = SecurityUtils.currentUserId();
+    DeleteBidInput input = new DeleteBidInput(bidId, auctionId, bidderId);
+    return ResponseEntity.ok(deleteBidUseCase.run(input));
   }
 }

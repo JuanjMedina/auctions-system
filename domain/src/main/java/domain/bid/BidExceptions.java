@@ -23,4 +23,10 @@ public final class BidExceptions {
       super(String.format("Puja demasiado baja para la subasta %s: %s", auctionId, message));
     }
   }
+
+  public static class UnauthorizedBidAccessException extends RuntimeException {
+    public UnauthorizedBidAccessException(UUID bidId) {
+      super("No tienes permiso para modificar la puja: " + bidId);
+    }
+  }
 }

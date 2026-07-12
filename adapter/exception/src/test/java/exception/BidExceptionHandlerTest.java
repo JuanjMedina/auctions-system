@@ -54,4 +54,18 @@ class BidExceptionHandlerTest {
     assertThat(problem.getTitle()).isEqualTo("Transición de puja inválida");
     assertThat(problem.getDetail()).isEqualTo(ex.getMessage());
   }
+
+  @Test
+  void handleUnauthorizedBidAccess_returnsForbiddenProblem() {
+    UUID bidId = UUID.randomUUID();
+    BidExceptions.UnauthorizedBidAccessException ex =
+        new BidExceptions.UnauthorizedBidAccessException(bidId);
+
+    ProblemDetail problem = handler.handleUnauthorizedBidAccess(ex);
+
+    assertThat(problem.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    assertThat(problem.getType()).hasToString("urn:problem:unauthorized-bid-access");
+    assertThat(problem.getTitle()).isEqualTo("Acceso no autorizado");
+    assertThat(problem.getDetail()).isEqualTo(ex.getMessage());
+  }
 }

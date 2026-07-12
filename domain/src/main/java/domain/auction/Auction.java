@@ -122,6 +122,18 @@ public class Auction {
     if (autoExtend && isInLastMinutes()) extendTime();
   }
 
+  public void revertToPreviousBid(UUID bidderId, BigDecimal amount) {
+    this.currentPrice = amount;
+    this.currentWinnerId = bidderId;
+    this.updatedAt = Instant.now();
+  }
+
+  public void resetToNoWinner() {
+    this.currentPrice = startingPrice;
+    this.currentWinnerId = null;
+    this.updatedAt = Instant.now();
+  }
+
   public void publish() {
     if (status != AuctionStatus.DRAFT)
       throw new AuctionExceptions.InvalidAuctionStatusTransitionException(

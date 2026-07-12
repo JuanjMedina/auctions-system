@@ -5,15 +5,19 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import bid.DeleteBidUseCase;
 import bid.ListBidsUseCase;
 import bid.PlaceBidUseCase;
+import bid.input.DeleteBidInput;
 import bid.input.ListBidsInput;
 import bid.input.PlaceBidInput;
+import bid.output.DeleteBidOutput;
 import bid.output.ListBidsResult;
 import bid.output.ListBidsResult.BidSummary;
 import bid.output.PlaceBidOutput;
@@ -44,6 +48,7 @@ class BidControllerTest {
 
   @Mock private PlaceBidUseCase placeBidUseCase;
   @Mock private ListBidsUseCase listBidsUseCase;
+  @Mock private DeleteBidUseCase deleteBidUseCase;
 
   private MockMvc mockMvc;
 
@@ -53,7 +58,8 @@ class BidControllerTest {
 
   @BeforeEach
   void setUp() {
-    BidController controller = new BidController(placeBidUseCase, listBidsUseCase);
+    BidController controller =
+        new BidController(placeBidUseCase, listBidsUseCase, deleteBidUseCase);
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setValidator(
@@ -140,5 +146,31 @@ class BidControllerTest {
     ArgumentCaptor<ListBidsInput> captor = ArgumentCaptor.forClass(ListBidsInput.class);
     verify(listBidsUseCase).run(captor.capture());
     assertThat(captor.getValue().auctionId()).isEqualTo(auctionId);
+  }
+
+  @Test
+  void deleteBid_withAuthenticatedOwner_returnsOk() throws Exception {
+    UUID auctionId = UUID.randomUUID();
+    UUID bidId = UUID.randomUUID();
+
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new TestingAuthenticationToken(bidderId.toString(), "password", "ROLE_BUYER"));
+
+    DeleteBidOutput output = new DeleteBidOutput(bidId, auctionId, BidStatus.CANCELLED);
+    when(deleteBidUseCase.run(any())).thenReturn(output);
+
+    mockMvc
+        .perform(delete("/auctions/{auctionId}/bids/{bidId}", auctionId, bidId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.bidId").value(bidId.toString()))
+        .andExpect(jsonPath("$.auctionId").value(auctionId.toString()))
+        .andExpect(jsonPath("$.status").value("CANCELLED"));
+
+    ArgumentCaptor<DeleteBidInput> captor = ArgumentCaptor.forClass(DeleteBidInput.class);
+    verify(deleteBidUseCase).run(captor.capture());
+    assertThat(captor.getValue().bidId()).isEqualTo(bidId);
+    assertThat(captor.getValue().auctionId()).isEqualTo(auctionId);
+    assertThat(captor.getValue().bidderId()).isEqualTo(bidderId);
   }
 }

@@ -37,4 +37,14 @@ public class BidExceptionHandler {
     problem.setDetail(ex.getMessage());
     return problem;
   }
+
+  @ExceptionHandler(BidExceptions.UnauthorizedBidAccessException.class)
+  public ProblemDetail handleUnauthorizedBidAccess(
+      BidExceptions.UnauthorizedBidAccessException ex) {
+    ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+    problem.setType(URI.create("urn:problem:unauthorized-bid-access"));
+    problem.setTitle("Acceso no autorizado");
+    problem.setDetail(ex.getMessage());
+    return problem;
+  }
 }

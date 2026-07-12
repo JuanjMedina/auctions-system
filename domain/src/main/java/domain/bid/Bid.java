@@ -79,4 +79,10 @@ public class Bid {
       throw new BidExceptions.InvalidBidStatusTransitionException(id, status, BidStatus.CANCELLED);
     this.status = BidStatus.CANCELLED;
   }
+
+  public void reactivate() {
+    if (status != BidStatus.OUTBID)
+      throw new BidExceptions.InvalidBidStatusTransitionException(id, status, BidStatus.ACTIVE);
+    this.status = BidStatus.ACTIVE;
+  }
 }
