@@ -1,7 +1,6 @@
 package wallet;
 
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +19,7 @@ public class WithdrawUseCase implements UseCase<WithdrawInput, WithdrawResult> {
   @Override
   @Transactional
   public WithdrawResult execute(WithdrawInput input) {
-    Wallet wallet =
-        walletRepository
-            .findByUserId(input.userId())
-            .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(input.userId()));
+    Wallet wallet = walletRepository.getByUserId(input.userId());
 
     WalletTransaction transaction = wallet.withdraw(input.amount(), input.description());
 
@@ -40,11 +36,7 @@ public class WithdrawUseCase implements UseCase<WithdrawInput, WithdrawResult> {
   }
 
   @Override
-  public WithdrawResult failed(Exception exception) {
-    if (exception instanceof WalletExceptions.WalletNotFoundException e) throw e;
-    if (exception instanceof WalletExceptions.InsufficientFundsException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al realizar el retiro", exception);
+  public String errorMessage() {
+    return "Error al realizar el retiro";
   }
 }

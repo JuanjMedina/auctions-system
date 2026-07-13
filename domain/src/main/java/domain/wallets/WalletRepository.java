@@ -11,6 +11,11 @@ public interface WalletRepository {
 
   Optional<Wallet> findByUserId(UUID userId);
 
+  default Wallet getByUserId(UUID userId) {
+    return findByUserId(userId)
+        .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(userId));
+  }
+
   WalletTransaction saveTransaction(WalletTransaction transaction);
 
   List<WalletTransaction> findTransactionsByWalletId(UUID walletId);

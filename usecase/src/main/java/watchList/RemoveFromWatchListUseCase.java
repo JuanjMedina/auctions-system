@@ -1,7 +1,6 @@
 package watchList;
 
 import domain.watchList.WatchList;
-import domain.watchList.WatchListExceptions;
 import domain.watchList.WatchListRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,12 +18,7 @@ public class RemoveFromWatchListUseCase
   @Override
   public RemoveFromWatchListResult execute(RemoveFromWatchListInput input) {
     WatchList entry =
-        watchListRepository
-            .findByUserIdAndAuctionId(input.userId(), input.auctionId())
-            .orElseThrow(
-                () ->
-                    new WatchListExceptions.WatchListEntryNotFoundException(
-                        input.userId(), input.auctionId()));
+        watchListRepository.getByUserIdAndAuctionId(input.userId(), input.auctionId());
 
     watchListRepository.delete(entry);
 
@@ -32,10 +26,7 @@ public class RemoveFromWatchListUseCase
   }
 
   @Override
-  public RemoveFromWatchListResult failed(Exception exception) {
-    if (exception instanceof WatchListExceptions.WatchListEntryNotFoundException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al quitar la subasta de favoritos", exception);
+  public String errorMessage() {
+    return "Error al quitar la subasta de favoritos";
   }
 }

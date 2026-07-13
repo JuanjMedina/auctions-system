@@ -10,7 +10,6 @@ import domain.watchList.WatchList;
 import domain.watchList.WatchListExceptions.WatchListEntryNotFoundException;
 import domain.watchList.WatchListRepository;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,8 +43,8 @@ class RemoveFromWatchListUseCaseTest {
   @Test
   void execute_existingEntry_returnsResultWithAuctionId() {
     // arrange
-    when(watchListRepository.findByUserIdAndAuctionId(USER_ID, AUCTION_ID))
-        .thenReturn(Optional.of(buildWatchList()));
+    when(watchListRepository.getByUserIdAndAuctionId(USER_ID, AUCTION_ID))
+        .thenReturn(buildWatchList());
 
     // act
     RemoveFromWatchListResult result = useCase.run(validInput());
@@ -58,8 +57,7 @@ class RemoveFromWatchListUseCaseTest {
   void execute_existingEntry_deletesEntryFromRepository() {
     // arrange
     WatchList entry = buildWatchList();
-    when(watchListRepository.findByUserIdAndAuctionId(USER_ID, AUCTION_ID))
-        .thenReturn(Optional.of(entry));
+    when(watchListRepository.getByUserIdAndAuctionId(USER_ID, AUCTION_ID)).thenReturn(entry);
 
     // act
     useCase.run(validInput());
@@ -73,8 +71,8 @@ class RemoveFromWatchListUseCaseTest {
   @Test
   void execute_entryNotFound_throwsWatchListEntryNotFoundException() {
     // arrange
-    when(watchListRepository.findByUserIdAndAuctionId(USER_ID, AUCTION_ID))
-        .thenReturn(Optional.empty());
+    when(watchListRepository.getByUserIdAndAuctionId(USER_ID, AUCTION_ID))
+        .thenThrow(new WatchListEntryNotFoundException(USER_ID, AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -84,8 +82,8 @@ class RemoveFromWatchListUseCaseTest {
   @Test
   void execute_entryNotFound_neverCallsDelete() {
     // arrange
-    when(watchListRepository.findByUserIdAndAuctionId(USER_ID, AUCTION_ID))
-        .thenReturn(Optional.empty());
+    when(watchListRepository.getByUserIdAndAuctionId(USER_ID, AUCTION_ID))
+        .thenThrow(new WatchListEntryNotFoundException(USER_ID, AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))

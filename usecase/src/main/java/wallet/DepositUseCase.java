@@ -1,7 +1,6 @@
 package wallet;
 
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +19,7 @@ public class DepositUseCase implements UseCase<DepositInput, DepositResult> {
   @Override
   @Transactional
   public DepositResult execute(DepositInput input) {
-    Wallet wallet =
-        walletRepository
-            .findByUserId(input.userId())
-            .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(input.userId()));
+    Wallet wallet = walletRepository.getByUserId(input.userId());
 
     WalletTransaction transaction = wallet.deposit(input.amount(), input.description());
 
@@ -40,10 +36,7 @@ public class DepositUseCase implements UseCase<DepositInput, DepositResult> {
   }
 
   @Override
-  public DepositResult failed(Exception exception) {
-    if (exception instanceof WalletExceptions.WalletNotFoundException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al realizar el depósito", exception);
+  public String errorMessage() {
+    return "Error al realizar el depósito";
   }
 }

@@ -9,6 +9,10 @@ public interface CategoryRepository {
 
   Optional<Category> findById(UUID id);
 
+  default Category getById(UUID id) {
+    return findById(id).orElseThrow(() -> new CategoryExceptions.CategoryNotFoundException(id));
+  }
+
   Optional<Category> findBySlug(String slug);
 
   List<Category> findAllActive();

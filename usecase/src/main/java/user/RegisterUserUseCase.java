@@ -61,9 +61,7 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
   }
 
   @Override
-  public RegisterUserResult failed(Exception exception) {
-    if (exception instanceof UserExceptions.EmailAlreadyTakenException e) throw e;
-    if (exception instanceof UserExceptions.UsernameAlreadyTakenException e) throw e;
-    throw new RuntimeException("Error inesperado en registro", exception);
+  public String errorMessage() {
+    return "Error inesperado en registro";
   }
 }

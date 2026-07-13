@@ -3,7 +3,6 @@ package user;
 import domain.user.TokenGenerator;
 import domain.user.User;
 import domain.user.UserExceptions.InvalidCredentialsException;
-import domain.user.UserExceptions.InvalidRefreshTokenException;
 import domain.user.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -40,9 +39,7 @@ public class RefreshTokenUseCase implements UseCase<RefreshTokenInput, LoginUser
   }
 
   @Override
-  public LoginUserResult failed(Exception exception) {
-    if (exception instanceof InvalidCredentialsException e) throw e;
-    if (exception instanceof InvalidRefreshTokenException e) throw e;
-    throw new RuntimeException("Error inesperado en refresh token", exception);
+  public String errorMessage() {
+    return "Error inesperado en refresh token";
   }
 }

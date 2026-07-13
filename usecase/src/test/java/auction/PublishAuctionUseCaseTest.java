@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import auction.input.PublishAuctionInput;
 import auction.output.PublishAuctionResult;
 import domain.auction.Auction;
+import domain.auction.AuctionExceptions;
 import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionExceptions.InvalidAuctionStatusTransitionException;
 import domain.auction.AuctionExceptions.UnauthorizedAuctionAccessException;
@@ -16,7 +17,6 @@ import domain.auction.AuctionStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,7 +65,7 @@ class PublishAuctionUseCaseTest {
     UUID sellerId = UUID.randomUUID();
     Auction auction =
         buildAuction(auctionId, sellerId, AuctionStatus.DRAFT, Instant.now().plusSeconds(3600));
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(auctionRepository.save(auction)).thenReturn(auction);
 
     // act
@@ -83,7 +83,7 @@ class PublishAuctionUseCaseTest {
     UUID sellerId = UUID.randomUUID();
     Auction auction =
         buildAuction(auctionId, sellerId, AuctionStatus.DRAFT, Instant.now().minusSeconds(3600));
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(auctionRepository.save(auction)).thenReturn(auction);
 
     // act
@@ -100,7 +100,7 @@ class PublishAuctionUseCaseTest {
     UUID sellerId = UUID.randomUUID();
     Auction auction =
         buildAuction(auctionId, sellerId, AuctionStatus.DRAFT, Instant.now().plusSeconds(3600));
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(auctionRepository.save(auction)).thenReturn(auction);
 
     // act
@@ -117,7 +117,8 @@ class PublishAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     UUID sellerId = UUID.randomUUID();
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(auctionId))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(auctionId));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new PublishAuctionInput(auctionId, sellerId)))
@@ -134,7 +135,7 @@ class PublishAuctionUseCaseTest {
     UUID otherUserId = UUID.randomUUID();
     Auction auction =
         buildAuction(auctionId, sellerId, AuctionStatus.DRAFT, Instant.now().plusSeconds(3600));
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new PublishAuctionInput(auctionId, otherUserId)))
@@ -150,7 +151,7 @@ class PublishAuctionUseCaseTest {
     UUID sellerId = UUID.randomUUID();
     Auction auction =
         buildAuction(auctionId, sellerId, AuctionStatus.ACTIVE, Instant.now().minusSeconds(3600));
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new PublishAuctionInput(auctionId, sellerId)))

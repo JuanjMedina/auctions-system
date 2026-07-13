@@ -9,12 +9,12 @@ import static org.mockito.Mockito.when;
 
 import domain.user.Role;
 import domain.user.User;
+import domain.user.UserExceptions;
 import domain.user.UserExceptions.EmailAlreadyTakenException;
 import domain.user.UserExceptions.UserNotFoundException;
 import domain.user.UserExceptions.UsernameAlreadyTakenException;
 import domain.user.UserRepository;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +59,7 @@ class UpdateUserProfileUseCaseTest {
   @Test
   void execute_onlyFullNameAndPhone_updatesProfileFields() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     setupSaveAnswer();
 
     // act
@@ -77,7 +77,7 @@ class UpdateUserProfileUseCaseTest {
   @Test
   void execute_onlyFullNameAndPhone_neverChecksEmailOrUsernameUniqueness() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     setupSaveAnswer();
 
     // act
@@ -94,7 +94,7 @@ class UpdateUserProfileUseCaseTest {
   void execute_newAvailableEmail_updatesEmail() {
     // arrange
     String newEmail = "nuevo@test.com";
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     when(userRepository.existsByEmail(newEmail)).thenReturn(false);
     setupSaveAnswer();
 
@@ -109,7 +109,7 @@ class UpdateUserProfileUseCaseTest {
   @Test
   void execute_sameEmailAsCurrent_doesNotCheckUniqueness() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     setupSaveAnswer();
 
     // act
@@ -127,7 +127,7 @@ class UpdateUserProfileUseCaseTest {
   void execute_emailAlreadyTaken_throwsEmailAlreadyTakenException() {
     // arrange
     String takenEmail = "otro@test.com";
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     when(userRepository.existsByEmail(takenEmail)).thenReturn(true);
 
     // act & assert
@@ -140,7 +140,7 @@ class UpdateUserProfileUseCaseTest {
   void execute_emailAlreadyTaken_neverSaves() {
     // arrange
     String takenEmail = "otro@test.com";
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     when(userRepository.existsByEmail(takenEmail)).thenReturn(true);
 
     // act & assert
@@ -157,7 +157,7 @@ class UpdateUserProfileUseCaseTest {
   void execute_newAvailableUsername_updatesUsername() {
     // arrange
     String newUsername = "nuevoUsuario";
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     when(userRepository.existsByUsername(newUsername)).thenReturn(false);
     setupSaveAnswer();
 
@@ -175,7 +175,7 @@ class UpdateUserProfileUseCaseTest {
   void execute_usernameAlreadyTaken_throwsUsernameAlreadyTakenException() {
     // arrange
     String takenUsername = "otroUsuario";
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     when(userRepository.existsByUsername(takenUsername)).thenReturn(true);
 
     // act & assert
@@ -188,7 +188,7 @@ class UpdateUserProfileUseCaseTest {
   void execute_usernameAlreadyTaken_neverSaves() {
     // arrange
     String takenUsername = "otroUsuario";
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
     when(userRepository.existsByUsername(takenUsername)).thenReturn(true);
 
     // act & assert
@@ -204,7 +204,8 @@ class UpdateUserProfileUseCaseTest {
   @Test
   void execute_userNotFound_throwsUserNotFoundException() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.getById(USER_ID))
+        .thenThrow(new UserExceptions.UserNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(
@@ -215,7 +216,8 @@ class UpdateUserProfileUseCaseTest {
   @Test
   void execute_userNotFound_neverSaves() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.getById(USER_ID))
+        .thenThrow(new UserExceptions.UserNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(

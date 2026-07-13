@@ -3,7 +3,6 @@ package category;
 import category.input.GetCategoryInput;
 import category.output.GetCategoryResult;
 import domain.categories.Category;
-import domain.categories.CategoryExceptions;
 import domain.categories.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,11 +16,7 @@ public class GetCategoryUseCase implements UseCase<GetCategoryInput, GetCategory
 
   @Override
   public GetCategoryResult execute(GetCategoryInput input) {
-    Category category =
-        categoryRepository
-            .findById(input.categoryId())
-            .orElseThrow(
-                () -> new CategoryExceptions.CategoryNotFoundException(input.categoryId()));
+    Category category = categoryRepository.getById(input.categoryId());
 
     return new GetCategoryResult(
         category.getId(),
@@ -32,9 +27,7 @@ public class GetCategoryUseCase implements UseCase<GetCategoryInput, GetCategory
   }
 
   @Override
-  public GetCategoryResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al obtener la categoría", exception);
+  public String errorMessage() {
+    return "Error al obtener la categoría";
   }
 }

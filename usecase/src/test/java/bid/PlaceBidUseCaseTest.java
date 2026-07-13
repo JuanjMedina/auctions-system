@@ -96,8 +96,8 @@ class PlaceBidUseCaseTest {
     Auction auction = buildAuction();
     Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(100));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
     mockSaves();
 
     // act
@@ -116,8 +116,8 @@ class PlaceBidUseCaseTest {
     Auction auction = buildAuction();
     Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(100));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
     mockSaves();
 
     // act
@@ -171,11 +171,11 @@ class PlaceBidUseCaseTest {
             BidStatus.ACTIVE,
             Instant.now());
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(bidderWallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(bidderWallet);
     when(bidRepository.findLatestActiveBidByAuctionIdAndBidderId(AUCTION_ID, previousWinnerId))
         .thenReturn(Optional.of(previousBid));
-    when(walletRepository.findByUserId(previousWinnerId)).thenReturn(Optional.of(previousWallet));
+    when(walletRepository.getByUserId(previousWinnerId)).thenReturn(previousWallet);
     mockSaves();
 
     // act
@@ -192,7 +192,8 @@ class PlaceBidUseCaseTest {
   @Test
   void execute_auctionNotFound_throwsAuctionNotFoundException() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -202,13 +203,14 @@ class PlaceBidUseCaseTest {
   @Test
   void execute_auctionNotFound_neverTouchesWalletOrBidRepositories() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(AuctionExceptions.AuctionNotFoundException.class);
 
-    verify(walletRepository, never()).findByUserId(any());
+    verify(walletRepository, never()).getByUserId(any());
     verify(bidRepository, never()).save(any());
   }
 
@@ -218,8 +220,9 @@ class PlaceBidUseCaseTest {
   void execute_walletNotFound_throwsWalletNotFoundException() {
     // arrange
     Auction auction = buildAuction();
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(BIDDER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -234,8 +237,8 @@ class PlaceBidUseCaseTest {
     Auction auction = buildAuction();
     Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(5));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -248,8 +251,8 @@ class PlaceBidUseCaseTest {
     Auction auction = buildAuction();
     Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(5));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -268,8 +271,8 @@ class PlaceBidUseCaseTest {
     Auction auction = buildAuction();
     Wallet wallet = buildWallet(SELLER_ID, BigDecimal.valueOf(100));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(SELLER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(SELLER_ID)).thenReturn(wallet);
 
     PlaceBidInput input =
         new PlaceBidInput(AUCTION_ID, SELLER_ID, BigDecimal.valueOf(20), false, null);
@@ -287,8 +290,8 @@ class PlaceBidUseCaseTest {
     Auction auction = buildAuction();
     Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(100));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
 
     PlaceBidInput input =
         new PlaceBidInput(AUCTION_ID, BIDDER_ID, BigDecimal.valueOf(5), false, null);
@@ -326,8 +329,8 @@ class PlaceBidUseCaseTest {
             0L);
     Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(100));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(closedAuction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(closedAuction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))

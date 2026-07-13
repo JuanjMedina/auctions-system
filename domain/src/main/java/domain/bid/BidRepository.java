@@ -9,6 +9,10 @@ public interface BidRepository {
 
   Optional<Bid> findById(UUID id);
 
+  default Bid getById(UUID id) {
+    return findById(id).orElseThrow(() -> new BidExceptions.BidNotFoundException(id));
+  }
+
   List<Bid> findByAuctionIdOrderByAmountDesc(UUID auctionId);
 
   List<Bid> findByBidderId(UUID bidderId);

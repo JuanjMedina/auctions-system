@@ -41,9 +41,7 @@ public class ListCategoriesUseCase implements UseCase<NoInput, ListActiveCategor
   }
 
   @Override
-  public ListActiveCategoriesResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al obtener las categorias", exception);
+  public String errorMessage() {
+    return "Error al obtener las categorias";
   }
 }

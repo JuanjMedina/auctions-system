@@ -1,7 +1,6 @@
 package user;
 
 import domain.user.User;
-import domain.user.UserExceptions;
 import domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,10 +16,7 @@ public class GetUserProfileUseCase implements UseCase<GetUserProfileInput, GetUs
 
   @Override
   public GetUserProfileResult execute(GetUserProfileInput input) {
-    User user =
-        userRepository
-            .findById(input.userId())
-            .orElseThrow(() -> new UserExceptions.UserNotFoundException(input.userId()));
+    User user = userRepository.getById(input.userId());
 
     return new GetUserProfileResult(
         user.getId(),
@@ -33,10 +29,7 @@ public class GetUserProfileUseCase implements UseCase<GetUserProfileInput, GetUs
   }
 
   @Override
-  public GetUserProfileResult failed(Exception exception) {
-    if (exception instanceof UserExceptions.UserNotFoundException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al obtener el perfil", exception);
+  public String errorMessage() {
+    return "Error al obtener el perfil";
   }
 }

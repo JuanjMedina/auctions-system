@@ -3,7 +3,6 @@ package bid;
 import bid.input.PlaceBidInput;
 import bid.output.PlaceBidOutput;
 import domain.auction.Auction;
-import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import domain.bid.Bid;
 import domain.bid.BidRepository;
@@ -40,15 +39,9 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
       maxAttempts = 3,
       backoff = @Backoff(delay = 100, multiplier = 2))
   public PlaceBidOutput execute(PlaceBidInput input) {
-    Auction auction =
-        auctionRepository
-            .findById(input.auctionId())
-            .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    Auction auction = auctionRepository.getById(input.auctionId());
 
-    Wallet bidderWallet =
-        walletRepository
-            .findByUserId(input.bidderId())
-            .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(input.bidderId()));
+    Wallet bidderWallet = walletRepository.getByUserId(input.bidderId());
 
     if (bidderWallet.availableBalance().compareTo(input.amount()) < 0) {
       throw new WalletExceptions.InsufficientFundsException(
@@ -99,16 +92,8 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
   }
 
   @Override
-  public PlaceBidOutput failed(Exception exception) {
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    if (exception instanceof AuctionExceptions.AuctionNotActiveException e) throw e;
-    if (exception instanceof AuctionExceptions.BidTooLowException e) throw e;
-    if (exception instanceof AuctionExceptions.SellerCannotBidException e) throw e;
-    if (exception instanceof WalletExceptions.WalletNotFoundException e) throw e;
-    if (exception instanceof WalletExceptions.InsufficientFundsException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al realizar la puja", exception);
+  public String errorMessage() {
+    return "Error al realizar la puja";
   }
 
   private void releaseOutbidFunds(UUID auctionId, UUID previousWinnerId) {
@@ -116,11 +101,7 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
         .findLatestActiveBidByAuctionIdAndBidderId(auctionId, previousWinnerId)
         .ifPresent(
             previous -> {
-              Wallet previousWallet =
-                  walletRepository
-                      .findByUserId(previousWinnerId)
-                      .orElseThrow(
-                          () -> new WalletExceptions.WalletNotFoundException(previousWinnerId));
+              Wallet previousWallet = walletRepository.getByUserId(previousWinnerId);
               WalletTransaction release =
                   previousWallet.release(previous.getAmount(), previous.getId());
               previous.markAsOutbid();

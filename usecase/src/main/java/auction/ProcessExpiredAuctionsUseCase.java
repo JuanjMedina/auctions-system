@@ -52,8 +52,11 @@ public class ProcessExpiredAuctionsUseCase implements UseCase<NoInput, ProcessAu
   @Override
   public ProcessAuctionsResult failed(Exception exception) {
     log.error("Error en ProcessExpiredAuctionsUseCase: {}", exception.getMessage(), exception);
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al procesar subastas expiradas", exception);
+    return UseCase.super.failed(exception);
+  }
+
+  @Override
+  public String errorMessage() {
+    return "Error al procesar subastas expiradas";
   }
 }

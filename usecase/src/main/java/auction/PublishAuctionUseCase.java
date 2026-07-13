@@ -19,10 +19,7 @@ public class PublishAuctionUseCase implements UseCase<PublishAuctionInput, Publi
   @Override
   @Transactional
   public PublishAuctionResult execute(PublishAuctionInput input) {
-    Auction auction =
-        auctionRepository
-            .findById(input.auctionId())
-            .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    Auction auction = auctionRepository.getById(input.auctionId());
 
     if (!auction.isOwnedBy(input.sellerId())) {
       throw new AuctionExceptions.UnauthorizedAuctionAccessException(input.auctionId());
@@ -34,10 +31,7 @@ public class PublishAuctionUseCase implements UseCase<PublishAuctionInput, Publi
   }
 
   @Override
-  public PublishAuctionResult failed(Exception exception) {
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    if (exception instanceof AuctionExceptions.UnauthorizedAuctionAccessException e) throw e;
-    if (exception instanceof AuctionExceptions.InvalidAuctionStatusTransitionException e) throw e;
-    throw new RuntimeException("Error al publicar la subasta", exception);
+  public String errorMessage() {
+    return "Error al publicar la subasta";
   }
 }

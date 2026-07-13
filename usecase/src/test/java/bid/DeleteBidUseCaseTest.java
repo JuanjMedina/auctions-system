@@ -10,22 +10,24 @@ import static org.mockito.Mockito.when;
 import bid.input.DeleteBidInput;
 import bid.output.DeleteBidOutput;
 import domain.auction.Auction;
+import domain.auction.AuctionExceptions;
 import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionRepository;
 import domain.auction.AuctionStatus;
 import domain.bid.Bid;
+import domain.bid.BidExceptions;
 import domain.bid.BidExceptions.BidNotFoundException;
 import domain.bid.BidExceptions.InvalidBidStatusTransitionException;
 import domain.bid.BidExceptions.UnauthorizedBidAccessException;
 import domain.bid.BidRepository;
 import domain.bid.BidStatus;
 import domain.wallets.Wallet;
+import domain.wallets.WalletExceptions;
 import domain.wallets.WalletExceptions.WalletNotFoundException;
 import domain.wallets.WalletRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -96,9 +98,9 @@ class DeleteBidUseCaseTest {
     Auction auction = buildAuction(BigDecimal.valueOf(20), leaderBid.getBidderId());
     Wallet wallet = buildWalletWithReserve(BIDDER_ID, BigDecimal.TEN);
 
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
     when(bidRepository.findActiveByAuctionId(AUCTION_ID)).thenReturn(List.of(leaderBid));
     when(bidRepository.save(any(Bid.class))).thenAnswer(inv -> inv.getArgument(0));
     when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -124,9 +126,9 @@ class DeleteBidUseCaseTest {
     Auction auction = buildAuction(BigDecimal.valueOf(20), BIDDER_ID);
     Wallet wallet = buildWalletWithReserve(BIDDER_ID, BigDecimal.valueOf(20));
 
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
     when(bidRepository.findActiveByAuctionId(AUCTION_ID)).thenReturn(List.of(bid));
     when(bidRepository.findByAuctionIdOrderByAmountDesc(AUCTION_ID))
         .thenReturn(List.of(bid, outbidCandidate));
@@ -149,9 +151,9 @@ class DeleteBidUseCaseTest {
     Auction auction = buildAuction(BigDecimal.valueOf(20), BIDDER_ID);
     Wallet wallet = buildWalletWithReserve(BIDDER_ID, BigDecimal.valueOf(20));
 
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.of(wallet));
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
     when(bidRepository.findActiveByAuctionId(AUCTION_ID)).thenReturn(List.of(bid));
     when(bidRepository.findByAuctionIdOrderByAmountDesc(AUCTION_ID)).thenReturn(List.of(bid));
     mockSaves();
@@ -168,7 +170,7 @@ class DeleteBidUseCaseTest {
   @Test
   void execute_bidNotFound_throwsBidNotFoundException() {
     UUID bidId = UUID.randomUUID();
-    when(bidRepository.findById(bidId)).thenReturn(Optional.empty());
+    when(bidRepository.getById(bidId)).thenThrow(new BidExceptions.BidNotFoundException(bidId));
 
     assertThatThrownBy(() -> useCase.run(new DeleteBidInput(bidId, AUCTION_ID, BIDDER_ID)))
         .isInstanceOf(BidNotFoundException.class);
@@ -179,7 +181,7 @@ class DeleteBidUseCaseTest {
   @Test
   void execute_bidBelongsToDifferentAuction_throwsBidNotFoundException() {
     Bid bid = buildBid(BIDDER_ID, BigDecimal.TEN, BidStatus.ACTIVE);
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
 
     UUID otherAuctionId = UUID.randomUUID();
 
@@ -187,7 +189,7 @@ class DeleteBidUseCaseTest {
             () -> useCase.run(new DeleteBidInput(bid.getId(), otherAuctionId, BIDDER_ID)))
         .isInstanceOf(BidNotFoundException.class);
 
-    verify(auctionRepository, never()).findById(any());
+    verify(auctionRepository, never()).getById(any());
   }
 
   // --- no es el dueño de la puja ---
@@ -195,15 +197,15 @@ class DeleteBidUseCaseTest {
   @Test
   void execute_notTheOwner_throwsUnauthorizedBidAccessException() {
     Bid bid = buildBid(BIDDER_ID, BigDecimal.TEN, BidStatus.ACTIVE);
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
 
     UUID otherUserId = UUID.randomUUID();
 
     assertThatThrownBy(() -> useCase.run(new DeleteBidInput(bid.getId(), AUCTION_ID, otherUserId)))
         .isInstanceOf(UnauthorizedBidAccessException.class);
 
-    verify(auctionRepository, never()).findById(any());
-    verify(walletRepository, never()).findByUserId(any());
+    verify(auctionRepository, never()).getById(any());
+    verify(walletRepository, never()).getByUserId(any());
   }
 
   // --- la puja no esta activa ---
@@ -211,12 +213,12 @@ class DeleteBidUseCaseTest {
   @Test
   void execute_bidNotActive_throwsInvalidBidStatusTransitionException() {
     Bid bid = buildBid(BIDDER_ID, BigDecimal.TEN, BidStatus.CANCELLED);
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
 
     assertThatThrownBy(() -> useCase.run(new DeleteBidInput(bid.getId(), AUCTION_ID, BIDDER_ID)))
         .isInstanceOf(InvalidBidStatusTransitionException.class);
 
-    verify(walletRepository, never()).findByUserId(any());
+    verify(walletRepository, never()).getByUserId(any());
   }
 
   // --- subasta no encontrada ---
@@ -224,13 +226,14 @@ class DeleteBidUseCaseTest {
   @Test
   void execute_auctionNotFound_throwsAuctionNotFoundException() {
     Bid bid = buildBid(BIDDER_ID, BigDecimal.TEN, BidStatus.ACTIVE);
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     assertThatThrownBy(() -> useCase.run(new DeleteBidInput(bid.getId(), AUCTION_ID, BIDDER_ID)))
         .isInstanceOf(AuctionNotFoundException.class);
 
-    verify(walletRepository, never()).findByUserId(any());
+    verify(walletRepository, never()).getByUserId(any());
   }
 
   // --- billetera no encontrada ---
@@ -239,9 +242,10 @@ class DeleteBidUseCaseTest {
   void execute_walletNotFound_throwsWalletNotFoundException() {
     Bid bid = buildBid(BIDDER_ID, BigDecimal.TEN, BidStatus.ACTIVE);
     Auction auction = buildAuction(BigDecimal.TEN, BIDDER_ID);
-    when(bidRepository.findById(bid.getId())).thenReturn(Optional.of(bid));
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
-    when(walletRepository.findByUserId(BIDDER_ID)).thenReturn(Optional.empty());
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(BIDDER_ID));
 
     assertThatThrownBy(() -> useCase.run(new DeleteBidInput(bid.getId(), AUCTION_ID, BIDDER_ID)))
         .isInstanceOf(WalletNotFoundException.class);

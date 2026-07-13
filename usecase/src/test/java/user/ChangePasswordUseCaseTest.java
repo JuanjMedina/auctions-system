@@ -9,12 +9,12 @@ import static org.mockito.Mockito.when;
 
 import domain.user.Role;
 import domain.user.User;
+import domain.user.UserExceptions;
 import domain.user.UserExceptions.InvalidCurrentPasswordException;
 import domain.user.UserExceptions.UserNotFoundException;
 import domain.user.UserPasswordEncoder;
 import domain.user.UserRepository;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +63,7 @@ class ChangePasswordUseCaseTest {
   void execute_validCurrentPassword_returnsResultWithUserId() {
     // arrange
     User user = buildUser();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.getById(USER_ID)).thenReturn(user);
     when(passwordEncoder.matches(CURRENT_PASSWORD, CURRENT_HASH)).thenReturn(true);
     when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn(NEW_HASH);
     when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -79,7 +79,7 @@ class ChangePasswordUseCaseTest {
   void execute_validCurrentPassword_hashesNewPasswordBeforeSaving() {
     // arrange
     User user = buildUser();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.getById(USER_ID)).thenReturn(user);
     when(passwordEncoder.matches(CURRENT_PASSWORD, CURRENT_HASH)).thenReturn(true);
     when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn(NEW_HASH);
     when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -97,7 +97,8 @@ class ChangePasswordUseCaseTest {
   @Test
   void execute_userNotFound_throwsUserNotFoundException() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.getById(USER_ID))
+        .thenThrow(new UserExceptions.UserNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput())).isInstanceOf(UserNotFoundException.class);
@@ -106,7 +107,8 @@ class ChangePasswordUseCaseTest {
   @Test
   void execute_userNotFound_neverChecksPasswordOrSaves() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.getById(USER_ID))
+        .thenThrow(new UserExceptions.UserNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput())).isInstanceOf(UserNotFoundException.class);
@@ -121,7 +123,7 @@ class ChangePasswordUseCaseTest {
   void execute_wrongCurrentPassword_throwsInvalidCurrentPasswordException() {
     // arrange
     User user = buildUser();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.getById(USER_ID)).thenReturn(user);
     when(passwordEncoder.matches(CURRENT_PASSWORD, CURRENT_HASH)).thenReturn(false);
 
     // act & assert
@@ -133,7 +135,7 @@ class ChangePasswordUseCaseTest {
   void execute_wrongCurrentPassword_neverEncodesOrSavesNewPassword() {
     // arrange
     User user = buildUser();
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+    when(userRepository.getById(USER_ID)).thenReturn(user);
     when(passwordEncoder.matches(CURRENT_PASSWORD, CURRENT_HASH)).thenReturn(false);
 
     // act & assert

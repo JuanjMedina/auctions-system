@@ -13,7 +13,6 @@ import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +47,7 @@ class WithdrawUseCaseTest {
   void execute_validWithdraw_returnsWithdrawResult() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(100));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(walletRepository.saveTransaction(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -66,7 +65,7 @@ class WithdrawUseCaseTest {
   void execute_validWithdraw_persistsWalletAndTransaction() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(100));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(walletRepository.saveTransaction(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -83,7 +82,8 @@ class WithdrawUseCaseTest {
   @Test
   void execute_walletNotFound_throwsWalletNotFoundException() {
     // arrange
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+    when(walletRepository.getByUserId(USER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -96,7 +96,7 @@ class WithdrawUseCaseTest {
   void execute_insufficientFunds_throwsInsufficientFundsException() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(10));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -107,7 +107,7 @@ class WithdrawUseCaseTest {
   void execute_insufficientFunds_neverSavesAnything() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(10));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -129,7 +129,7 @@ class WithdrawUseCaseTest {
             "USD",
             0L,
             Instant.now());
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))

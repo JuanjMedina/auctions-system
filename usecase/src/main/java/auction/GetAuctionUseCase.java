@@ -4,7 +4,6 @@ import auction.input.GetAuctionInput;
 import auction.output.GetAuctionResult;
 import auction.output.GetAuctionResult.AuctionImageResult;
 import domain.auction.Auction;
-import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,18 +18,13 @@ public class GetAuctionUseCase implements UseCase<GetAuctionInput, GetAuctionRes
 
   @Override
   public GetAuctionResult execute(GetAuctionInput input) {
-    Auction auction =
-        auctionRepository
-            .findById(input.auctionId())
-            .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    Auction auction = auctionRepository.getById(input.auctionId());
     return toResult(auction);
   }
 
   @Override
-  public GetAuctionResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al obtener la subasta", exception);
+  public String errorMessage() {
+    return "Error al obtener la subasta";
   }
 
   private GetAuctionResult toResult(Auction auction) {

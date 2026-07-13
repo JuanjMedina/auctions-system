@@ -36,9 +36,7 @@ public class CreateAuctionUseCase implements UseCase<CreateAuctionInput, CreateA
   }
 
   @Override
-  public CreateAuctionResult failed(Exception exception) {
-    throw exception instanceof RuntimeException exp
-        ? exp
-        : new RuntimeException("Error al crear la subasta", exception);
+  public String errorMessage() {
+    return "Error al crear la subasta";
   }
 }

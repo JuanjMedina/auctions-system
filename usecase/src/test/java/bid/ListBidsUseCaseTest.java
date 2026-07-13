@@ -18,7 +18,6 @@ import domain.bid.BidStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -83,7 +82,7 @@ class ListBidsUseCaseTest {
             buildBid(BigDecimal.valueOf(30), false, BidStatus.WINNING),
             buildBid(BigDecimal.valueOf(20), false, BidStatus.OUTBID));
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
     when(bidRepository.findByAuctionIdOrderByAmountDesc(AUCTION_ID)).thenReturn(bids);
 
     // act
@@ -101,7 +100,7 @@ class ListBidsUseCaseTest {
     Auction auction = buildAuction();
     Bid bid = buildBid(BigDecimal.valueOf(30), true, BidStatus.WINNING);
 
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
     when(bidRepository.findByAuctionIdOrderByAmountDesc(AUCTION_ID)).thenReturn(List.of(bid));
 
     // act
@@ -122,7 +121,7 @@ class ListBidsUseCaseTest {
   void execute_auctionWithNoBids_returnsEmptyList() {
     // arrange
     Auction auction = buildAuction();
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
     when(bidRepository.findByAuctionIdOrderByAmountDesc(AUCTION_ID)).thenReturn(List.of());
 
     // act
@@ -137,7 +136,8 @@ class ListBidsUseCaseTest {
   @Test
   void execute_auctionNotFound_throwsAuctionNotFoundException() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new ListBidsInput(AUCTION_ID)))
@@ -147,7 +147,8 @@ class ListBidsUseCaseTest {
   @Test
   void execute_auctionNotFound_neverQueriesBidRepository() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new ListBidsInput(AUCTION_ID)))

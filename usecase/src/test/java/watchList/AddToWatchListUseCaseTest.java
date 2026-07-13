@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import domain.auction.Auction;
+import domain.auction.AuctionExceptions;
 import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionRepository;
 import domain.auction.AuctionStatus;
@@ -16,7 +17,6 @@ import domain.watchList.WatchListRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +70,7 @@ class AddToWatchListUseCaseTest {
   @Test
   void execute_validAuction_returnsResultWithAuctionId() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(buildAuction()));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(buildAuction());
     when(watchListRepository.existsByUserIdAndAuctionId(USER_ID, AUCTION_ID)).thenReturn(false);
     when(watchListRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -86,7 +86,7 @@ class AddToWatchListUseCaseTest {
   @Test
   void execute_validAuction_persistsWatchListEntry() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(buildAuction()));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(buildAuction());
     when(watchListRepository.existsByUserIdAndAuctionId(USER_ID, AUCTION_ID)).thenReturn(false);
     when(watchListRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -102,7 +102,8 @@ class AddToWatchListUseCaseTest {
   @Test
   void execute_auctionNotFound_throwsAuctionNotFoundException() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -112,7 +113,8 @@ class AddToWatchListUseCaseTest {
   @Test
   void execute_auctionNotFound_neverChecksWatchListOrSaves() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(AUCTION_ID))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(AUCTION_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -127,7 +129,7 @@ class AddToWatchListUseCaseTest {
   @Test
   void execute_alreadyInWatchList_throwsAlreadyInWatchListException() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(buildAuction()));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(buildAuction());
     when(watchListRepository.existsByUserIdAndAuctionId(USER_ID, AUCTION_ID)).thenReturn(true);
 
     // act & assert
@@ -138,7 +140,7 @@ class AddToWatchListUseCaseTest {
   @Test
   void execute_alreadyInWatchList_neverSaves() {
     // arrange
-    when(auctionRepository.findById(AUCTION_ID)).thenReturn(Optional.of(buildAuction()));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(buildAuction());
     when(watchListRepository.existsByUserIdAndAuctionId(USER_ID, AUCTION_ID)).thenReturn(true);
 
     // act & assert

@@ -10,6 +10,10 @@ public interface AuctionRepository {
 
   Optional<Auction> findById(UUID id);
 
+  default Auction getById(UUID id) {
+    return findById(id).orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(id));
+  }
+
   PageResult<Auction> findAll(
       Optional<AuctionStatus> status, Optional<UUID> categoryId, int page, int size);
 

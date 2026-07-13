@@ -1,7 +1,6 @@
 package wallet;
 
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,10 +16,7 @@ public class GetWalletUseCase implements UseCase<GetWalletInput, GetWalletResult
 
   @Override
   public GetWalletResult execute(GetWalletInput input) {
-    Wallet wallet =
-        walletRepository
-            .findByUserId(input.userId())
-            .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(input.userId()));
+    Wallet wallet = walletRepository.getByUserId(input.userId());
 
     return new GetWalletResult(
         wallet.getId(),
@@ -33,9 +29,7 @@ public class GetWalletUseCase implements UseCase<GetWalletInput, GetWalletResult
   }
 
   @Override
-  public GetWalletResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al obtener la billetera", exception);
+  public String errorMessage() {
+    return "Error al obtener la billetera";
   }
 }

@@ -1,7 +1,6 @@
 package wallet;
 
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import java.util.List;
@@ -21,10 +20,7 @@ public class GetWalletTransactionsUseCase
 
   @Override
   public GetWalletTransactionsResult execute(GetWalletTransactionsInput input) {
-    Wallet wallet =
-        walletRepository
-            .findByUserId(input.userId())
-            .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(input.userId()));
+    Wallet wallet = walletRepository.getByUserId(input.userId());
 
     List<WalletTransaction> transactions =
         walletRepository.findTransactionsByWalletId(wallet.getId());
@@ -47,10 +43,7 @@ public class GetWalletTransactionsUseCase
   }
 
   @Override
-  public GetWalletTransactionsResult failed(Exception exception) {
-    if (exception instanceof WalletExceptions.WalletNotFoundException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al obtener el historial de transacciones", exception);
+  public String errorMessage() {
+    return "Error al obtener el historial de transacciones";
   }
 }

@@ -12,7 +12,6 @@ import domain.outbox.EventType;
 import domain.outbox.OutboxEvent;
 import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import java.util.List;
@@ -33,10 +32,7 @@ public class CancelAuctionUseCase implements UseCase<CancelAuctionInput, CancelA
   @Override
   @Transactional
   public CancelAuctionResult execute(CancelAuctionInput input) {
-    Auction auction =
-        auctionRepository
-            .findById(input.auctionId())
-            .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    Auction auction = auctionRepository.getById(input.auctionId());
 
     if (!auction.isOwnedBy(input.sellerId())) {
       throw new AuctionExceptions.UnauthorizedAuctionAccessException(input.auctionId());
@@ -62,21 +58,13 @@ public class CancelAuctionUseCase implements UseCase<CancelAuctionInput, CancelA
   }
 
   @Override
-  public CancelAuctionResult failed(Exception exception) {
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    if (exception instanceof AuctionExceptions.UnauthorizedAuctionAccessException e) throw e;
-    if (exception instanceof AuctionExceptions.InvalidAuctionStatusTransitionException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al cancelar la subasta", exception);
+  public String errorMessage() {
+    return "Error al cancelar la subasta";
   }
 
   private void releaseAllReserves(List<Bid> activeBids) {
     for (Bid bid : activeBids) {
-      Wallet wallet =
-          walletRepository
-              .findByUserId(bid.getBidderId())
-              .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(bid.getBidderId()));
+      Wallet wallet = walletRepository.getByUserId(bid.getBidderId());
 
       WalletTransaction release = wallet.release(bid.getAmount(), bid.getId());
       bid.cancel();

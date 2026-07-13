@@ -57,9 +57,7 @@ public class ListAuctionsUseCase implements UseCase<ListAuctionsInput, ListAucti
   }
 
   @Override
-  public ListAuctionsResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al listar subastas", exception);
+  public String errorMessage() {
+    return "Error al listar subastas";
   }
 }

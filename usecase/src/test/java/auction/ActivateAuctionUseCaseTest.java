@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import auction.input.ActivateAuctionInput;
 import auction.output.ActivateAuctionResult;
 import domain.auction.Auction;
+import domain.auction.AuctionExceptions;
 import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionExceptions.InvalidAuctionStatusTransitionException;
 import domain.auction.AuctionRepository;
@@ -15,7 +16,6 @@ import domain.auction.AuctionStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +62,7 @@ class ActivateAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, AuctionStatus.SCHEDULED);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(auctionRepository.save(auction)).thenReturn(auction);
 
     // act
@@ -78,7 +78,7 @@ class ActivateAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, AuctionStatus.SCHEDULED);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(auctionRepository.save(auction)).thenReturn(auction);
 
     // act
@@ -94,7 +94,8 @@ class ActivateAuctionUseCaseTest {
   void execute_auctionNotFound_throwsAuctionNotFoundException() {
     // arrange
     UUID auctionId = UUID.randomUUID();
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(auctionId))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(auctionId));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new ActivateAuctionInput(auctionId)))
@@ -108,7 +109,7 @@ class ActivateAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, AuctionStatus.DRAFT);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new ActivateAuctionInput(auctionId)))
@@ -120,7 +121,7 @@ class ActivateAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, AuctionStatus.ACTIVE);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new ActivateAuctionInput(auctionId)))

@@ -49,8 +49,11 @@ public class ActivateScheduledAuctionsUseCase implements UseCase<NoInput, Proces
   @Override
   public ProcessAuctionsResult failed(Exception exception) {
     log.error("Error en ActivateScheduledAuctionsUseCase: {}", exception.getMessage(), exception);
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al activar subastas programadas", exception);
+    return UseCase.super.failed(exception);
+  }
+
+  @Override
+  public String errorMessage() {
+    return "Error al activar subastas programadas";
   }
 }

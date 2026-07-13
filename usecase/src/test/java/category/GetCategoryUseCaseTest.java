@@ -9,7 +9,6 @@ import category.output.GetCategoryResult;
 import domain.categories.Category;
 import domain.categories.CategoryExceptions;
 import domain.categories.CategoryRepository;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +36,7 @@ class GetCategoryUseCaseTest {
   void execute_existingCategory_returnsCategoryData() {
     // arrange
     Category category = buildCategory(null, true);
-    when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
+    when(categoryRepository.getById(CATEGORY_ID)).thenReturn(category);
 
     // act
     GetCategoryResult result = useCase.run(new GetCategoryInput(CATEGORY_ID));
@@ -55,7 +54,7 @@ class GetCategoryUseCaseTest {
     // arrange
     UUID parentId = UUID.randomUUID();
     Category category = buildCategory(parentId, true);
-    when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
+    when(categoryRepository.getById(CATEGORY_ID)).thenReturn(category);
 
     // act
     GetCategoryResult result = useCase.run(new GetCategoryInput(CATEGORY_ID));
@@ -68,7 +67,7 @@ class GetCategoryUseCaseTest {
   void execute_inactiveCategory_returnsIsActiveFalse() {
     // arrange
     Category category = buildCategory(null, false);
-    when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
+    when(categoryRepository.getById(CATEGORY_ID)).thenReturn(category);
 
     // act
     GetCategoryResult result = useCase.run(new GetCategoryInput(CATEGORY_ID));
@@ -82,7 +81,8 @@ class GetCategoryUseCaseTest {
   @Test
   void execute_categoryNotFound_throwsCategoryNotFoundException() {
     // arrange
-    when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.empty());
+    when(categoryRepository.getById(CATEGORY_ID))
+        .thenThrow(new CategoryExceptions.CategoryNotFoundException(CATEGORY_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetCategoryInput(CATEGORY_ID)))
@@ -92,7 +92,8 @@ class GetCategoryUseCaseTest {
   @Test
   void execute_categoryNotFound_exceptionContainsCategoryId() {
     // arrange
-    when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.empty());
+    when(categoryRepository.getById(CATEGORY_ID))
+        .thenThrow(new CategoryExceptions.CategoryNotFoundException(CATEGORY_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetCategoryInput(CATEGORY_ID)))

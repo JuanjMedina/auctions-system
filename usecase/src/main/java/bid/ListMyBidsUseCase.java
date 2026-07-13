@@ -37,9 +37,7 @@ public class ListMyBidsUseCase implements UseCase<ListMyBidsInput, ListMyBidsRes
   }
 
   @Override
-  public ListMyBidsResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al listar mis pujas", exception);
+  public String errorMessage() {
+    return "Error al listar mis pujas";
   }
 }

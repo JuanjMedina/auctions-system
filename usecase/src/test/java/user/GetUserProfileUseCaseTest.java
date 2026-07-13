@@ -6,10 +6,10 @@ import static org.mockito.Mockito.when;
 
 import domain.user.Role;
 import domain.user.User;
+import domain.user.UserExceptions;
 import domain.user.UserExceptions.UserNotFoundException;
 import domain.user.UserRepository;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +51,7 @@ class GetUserProfileUseCaseTest {
   @Test
   void execute_existingUser_returnsProfileWithCorrectData() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.of(buildUser()));
+    when(userRepository.getById(USER_ID)).thenReturn(buildUser());
 
     // act
     GetUserProfileResult result = useCase.run(new GetUserProfileInput(USER_ID));
@@ -71,7 +71,8 @@ class GetUserProfileUseCaseTest {
   @Test
   void execute_userNotFound_throwsUserNotFoundException() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.getById(USER_ID))
+        .thenThrow(new UserExceptions.UserNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetUserProfileInput(USER_ID)))
@@ -81,7 +82,8 @@ class GetUserProfileUseCaseTest {
   @Test
   void execute_userNotFound_exceptionContainsUserId() {
     // arrange
-    when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+    when(userRepository.getById(USER_ID))
+        .thenThrow(new UserExceptions.UserNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetUserProfileInput(USER_ID)))

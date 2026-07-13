@@ -32,10 +32,8 @@ public class ListWatchListUseCase implements UseCase<ListWatchListInput, ListWat
   }
 
   @Override
-  public ListWatchListResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al listar los favoritos", exception);
+  public String errorMessage() {
+    return "Error al listar los favoritos";
   }
 
   private Optional<WatchListEntry> toEntry(WatchList watchList) {

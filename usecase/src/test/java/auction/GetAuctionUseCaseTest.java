@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import auction.input.GetAuctionInput;
 import auction.output.GetAuctionResult;
 import domain.auction.Auction;
+import domain.auction.AuctionExceptions;
 import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionImage;
 import domain.auction.AuctionRepository;
@@ -14,7 +15,6 @@ import domain.auction.AuctionStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +61,7 @@ class GetAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, List.of());
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act
     GetAuctionResult result = useCase.run(new GetAuctionInput(auctionId));
@@ -82,7 +82,7 @@ class GetAuctionUseCaseTest {
     AuctionImage image1 = new AuctionImage(UUID.randomUUID(), "http://img1.png", true, 0);
     AuctionImage image2 = new AuctionImage(UUID.randomUUID(), "http://img2.png", false, 1);
     Auction auction = buildAuction(auctionId, List.of(image1, image2));
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act
     GetAuctionResult result = useCase.run(new GetAuctionInput(auctionId));
@@ -101,7 +101,8 @@ class GetAuctionUseCaseTest {
   void execute_auctionNotFound_throwsAuctionNotFoundException() {
     // arrange
     UUID auctionId = UUID.randomUUID();
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(auctionId))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(auctionId));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetAuctionInput(auctionId)))

@@ -13,7 +13,6 @@ import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +47,7 @@ class DepositUseCaseTest {
   void execute_validDeposit_returnsDepositResult() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(50));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(walletRepository.saveTransaction(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -67,7 +66,7 @@ class DepositUseCaseTest {
   void execute_validDeposit_persistsWalletAndTransaction() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(50));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(walletRepository.saveTransaction(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -84,7 +83,8 @@ class DepositUseCaseTest {
   @Test
   void execute_walletNotFound_throwsWalletNotFoundException() {
     // arrange
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+    when(walletRepository.getByUserId(USER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -94,7 +94,8 @@ class DepositUseCaseTest {
   @Test
   void execute_walletNotFound_neverSavesAnything() {
     // arrange
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+    when(walletRepository.getByUserId(USER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
@@ -110,7 +111,7 @@ class DepositUseCaseTest {
   void execute_negativeAmount_throwsIllegalArgumentException() {
     // arrange
     Wallet wallet = buildWallet(BigDecimal.valueOf(50));
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
 
     DepositInput input = new DepositInput(USER_ID, BigDecimal.valueOf(-10), "Invalid");
 

@@ -3,7 +3,6 @@ package auction;
 import auction.input.CloseAuctionInput;
 import auction.output.CloseAuctionResult;
 import domain.auction.Auction;
-import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import domain.auction.AuctionStatus;
 import domain.bid.Bid;
@@ -13,7 +12,6 @@ import domain.outbox.EventType;
 import domain.outbox.OutboxEvent;
 import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import java.util.List;
@@ -35,10 +33,7 @@ public class CloseAuctionUseCase implements UseCase<CloseAuctionInput, CloseAuct
   @Override
   @Transactional
   public CloseAuctionResult execute(CloseAuctionInput input) {
-    Auction auction =
-        auctionRepository
-            .findById(input.auctionId())
-            .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    Auction auction = auctionRepository.getById(input.auctionId());
 
     // Domain decides AWARDED or FAILED based on winner + reservePrice
     auction.close();
@@ -58,12 +53,8 @@ public class CloseAuctionUseCase implements UseCase<CloseAuctionInput, CloseAuct
   }
 
   @Override
-  public CloseAuctionResult failed(Exception exception) {
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    if (exception instanceof AuctionExceptions.InvalidAuctionStatusTransitionException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al cerrar la subasta", exception);
+  public String errorMessage() {
+    return "Error al cerrar la subasta";
   }
 
   // -------------------------------------------------------------------------
@@ -139,8 +130,6 @@ public class CloseAuctionUseCase implements UseCase<CloseAuctionInput, CloseAuct
   }
 
   private Wallet loadWallet(UUID userId) {
-    return walletRepository
-        .findByUserId(userId)
-        .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(userId));
+    return walletRepository.getByUserId(userId);
   }
 }

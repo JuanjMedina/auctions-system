@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import auction.input.CancelAuctionInput;
 import auction.output.CancelAuctionResult;
 import domain.auction.Auction;
+import domain.auction.AuctionExceptions;
 import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionExceptions.InvalidAuctionStatusTransitionException;
 import domain.auction.AuctionExceptions.UnauthorizedAuctionAccessException;
@@ -22,12 +23,12 @@ import domain.bid.BidRepository;
 import domain.bid.BidStatus;
 import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
+import domain.wallets.WalletExceptions;
 import domain.wallets.WalletExceptions.WalletNotFoundException;
 import domain.wallets.WalletRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -95,7 +96,7 @@ class CancelAuctionUseCaseTest {
     UUID auctionId = UUID.randomUUID();
     UUID sellerId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, sellerId, AuctionStatus.ACTIVE);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(bidRepository.findActiveByAuctionId(auctionId)).thenReturn(List.of());
 
     // act
@@ -120,9 +121,9 @@ class CancelAuctionUseCaseTest {
     Bid bid = buildActiveBid(auctionId, bidderId, BigDecimal.TEN);
     Wallet wallet = buildWallet(bidderId, BigDecimal.TEN);
 
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(bidRepository.findActiveByAuctionId(auctionId)).thenReturn(List.of(bid));
-    when(walletRepository.findByUserId(bidderId)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(bidderId)).thenReturn(wallet);
 
     // act
     CancelAuctionResult result = useCase.run(new CancelAuctionInput(auctionId, sellerId));
@@ -148,10 +149,10 @@ class CancelAuctionUseCaseTest {
     Wallet wallet1 = buildWallet(bidder1, BigDecimal.TEN);
     Wallet wallet2 = buildWallet(bidder2, BigDecimal.valueOf(15));
 
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(bidRepository.findActiveByAuctionId(auctionId)).thenReturn(List.of(bid1, bid2));
-    when(walletRepository.findByUserId(bidder1)).thenReturn(Optional.of(wallet1));
-    when(walletRepository.findByUserId(bidder2)).thenReturn(Optional.of(wallet2));
+    when(walletRepository.getByUserId(bidder1)).thenReturn(wallet1);
+    when(walletRepository.getByUserId(bidder2)).thenReturn(wallet2);
 
     // act
     CancelAuctionResult result = useCase.run(new CancelAuctionInput(auctionId, sellerId));
@@ -169,7 +170,8 @@ class CancelAuctionUseCaseTest {
     // arrange
     UUID auctionId = UUID.randomUUID();
     UUID sellerId = UUID.randomUUID();
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.empty());
+    when(auctionRepository.getById(auctionId))
+        .thenThrow(new AuctionExceptions.AuctionNotFoundException(auctionId));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new CancelAuctionInput(auctionId, sellerId)))
@@ -185,7 +187,7 @@ class CancelAuctionUseCaseTest {
     UUID sellerId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, sellerId, AuctionStatus.ACTIVE);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new CancelAuctionInput(auctionId, otherUserId)))
@@ -199,7 +201,7 @@ class CancelAuctionUseCaseTest {
     UUID sellerId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, sellerId, AuctionStatus.ACTIVE);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
 
     // act
     assertThatThrownBy(() -> useCase.run(new CancelAuctionInput(auctionId, otherUserId)))
@@ -217,7 +219,7 @@ class CancelAuctionUseCaseTest {
     UUID auctionId = UUID.randomUUID();
     UUID sellerId = UUID.randomUUID();
     Auction auction = buildAuction(auctionId, sellerId, AuctionStatus.AWARDED);
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(bidRepository.findActiveByAuctionId(auctionId)).thenReturn(List.of());
 
     // act & assert
@@ -236,9 +238,10 @@ class CancelAuctionUseCaseTest {
     Auction auction = buildAuction(auctionId, sellerId, AuctionStatus.ACTIVE);
     Bid bid = buildActiveBid(auctionId, bidderId, BigDecimal.TEN);
 
-    when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
     when(bidRepository.findActiveByAuctionId(auctionId)).thenReturn(List.of(bid));
-    when(walletRepository.findByUserId(bidderId)).thenReturn(Optional.empty());
+    when(walletRepository.getByUserId(bidderId))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(bidderId));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new CancelAuctionInput(auctionId, sellerId)))

@@ -20,10 +20,7 @@ public class UpdateUserProfileUseCase
   @Override
   @Transactional
   public UpdateUserProfileResult execute(UpdateUserProfileInput input) {
-    User user =
-        userRepository
-            .findById(input.userId())
-            .orElseThrow(() -> new UserExceptions.UserNotFoundException(input.userId()));
+    User user = userRepository.getById(input.userId());
 
     if (input.email() != null && !input.email().equals(user.getEmail())) {
       if (userRepository.existsByEmail(input.email())) {
@@ -56,12 +53,7 @@ public class UpdateUserProfileUseCase
   }
 
   @Override
-  public UpdateUserProfileResult failed(Exception exception) {
-    if (exception instanceof UserExceptions.UserNotFoundException e) throw e;
-    if (exception instanceof UserExceptions.EmailAlreadyTakenException e) throw e;
-    if (exception instanceof UserExceptions.UsernameAlreadyTakenException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al actualizar el perfil", exception);
+  public String errorMessage() {
+    return "Error al actualizar el perfil";
   }
 }

@@ -3,14 +3,12 @@ package bid;
 import bid.input.DeleteBidInput;
 import bid.output.DeleteBidOutput;
 import domain.auction.Auction;
-import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import domain.bid.Bid;
 import domain.bid.BidExceptions;
 import domain.bid.BidRepository;
 import domain.bid.BidStatus;
 import domain.wallets.Wallet;
-import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
 import java.util.Optional;
@@ -30,10 +28,7 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
   @Override
   @Transactional
   public DeleteBidOutput execute(DeleteBidInput input) {
-    Bid bid =
-        bidRepository
-            .findById(input.bidId())
-            .orElseThrow(() -> new BidExceptions.BidNotFoundException(input.bidId()));
+    Bid bid = bidRepository.getById(input.bidId());
 
     if (!bid.getAuctionId().equals(input.auctionId())) {
       throw new BidExceptions.BidNotFoundException(input.bidId());
@@ -48,10 +43,7 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
           bid.getId(), bid.getStatus(), BidStatus.CANCELLED);
     }
 
-    Auction auction =
-        auctionRepository
-            .findById(input.auctionId())
-            .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    Auction auction = auctionRepository.getById(input.auctionId());
 
     bid.cancel();
     releaseReservedFunds(bid);
@@ -66,15 +58,8 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
   }
 
   @Override
-  public DeleteBidOutput failed(Exception exception) {
-    if (exception instanceof BidExceptions.BidNotFoundException e) throw e;
-    if (exception instanceof BidExceptions.UnauthorizedBidAccessException e) throw e;
-    if (exception instanceof BidExceptions.InvalidBidStatusTransitionException e) throw e;
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    if (exception instanceof WalletExceptions.WalletNotFoundException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al cancelar la puja", exception);
+  public String errorMessage() {
+    return "Error al cancelar la puja";
   }
 
   // La puja aun figura ACTIVE en base de datos: bid.cancel() solo mutó el objeto en memoria,
@@ -88,10 +73,7 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
   }
 
   private void releaseReservedFunds(Bid bid) {
-    Wallet bidderWallet =
-        walletRepository
-            .findByUserId(bid.getBidderId())
-            .orElseThrow(() -> new WalletExceptions.WalletNotFoundException(bid.getBidderId()));
+    Wallet bidderWallet = walletRepository.getByUserId(bid.getBidderId());
     WalletTransaction release = bidderWallet.release(bid.getAmount(), bid.getId());
     walletRepository.save(bidderWallet);
     walletRepository.saveTransaction(release);

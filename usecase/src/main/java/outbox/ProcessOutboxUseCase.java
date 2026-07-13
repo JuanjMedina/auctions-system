@@ -53,8 +53,11 @@ public class ProcessOutboxUseCase implements UseCase<ProcessOutboxInput, Process
   @Override
   public ProcessOutboxResult failed(Exception exception) {
     log.error("Outbox processing batch failed: {}", exception.getMessage());
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al procesar el outbox", exception);
+    return UseCase.super.failed(exception);
+  }
+
+  @Override
+  public String errorMessage() {
+    return "Error al procesar el outbox";
   }
 }

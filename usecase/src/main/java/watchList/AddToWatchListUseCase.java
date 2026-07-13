@@ -1,6 +1,5 @@
 package watchList;
 
-import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import domain.watchList.WatchList;
 import domain.watchList.WatchListExceptions;
@@ -20,9 +19,7 @@ public class AddToWatchListUseCase implements UseCase<AddToWatchListInput, AddTo
 
   @Override
   public AddToWatchListResult execute(AddToWatchListInput input) {
-    auctionRepository
-        .findById(input.auctionId())
-        .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    auctionRepository.getById(input.auctionId());
 
     if (watchListRepository.existsByUserIdAndAuctionId(input.userId(), input.auctionId())) {
       throw new WatchListExceptions.AlreadyInWatchListException(input.userId(), input.auctionId());
@@ -34,11 +31,7 @@ public class AddToWatchListUseCase implements UseCase<AddToWatchListInput, AddTo
   }
 
   @Override
-  public AddToWatchListResult failed(Exception exception) {
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    if (exception instanceof WatchListExceptions.AlreadyInWatchListException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al agregar la subasta a favoritos", exception);
+  public String errorMessage() {
+    return "Error al agregar la subasta a favoritos";
   }
 }

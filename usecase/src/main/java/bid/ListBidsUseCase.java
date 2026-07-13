@@ -3,7 +3,6 @@ package bid;
 import bid.input.ListBidsInput;
 import bid.output.ListBidsResult;
 import bid.output.ListBidsResult.BidSummary;
-import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
 import domain.bid.Bid;
 import domain.bid.BidRepository;
@@ -21,9 +20,7 @@ public class ListBidsUseCase implements UseCase<ListBidsInput, ListBidsResult> {
 
   @Override
   public ListBidsResult execute(ListBidsInput input) {
-    auctionRepository
-        .findById(input.auctionId())
-        .orElseThrow(() -> new AuctionExceptions.AuctionNotFoundException(input.auctionId()));
+    auctionRepository.getById(input.auctionId());
 
     List<Bid> bids = bidRepository.findByAuctionIdOrderByAmountDesc(input.auctionId());
 
@@ -44,10 +41,7 @@ public class ListBidsUseCase implements UseCase<ListBidsInput, ListBidsResult> {
   }
 
   @Override
-  public ListBidsResult failed(Exception exception) {
-    if (exception instanceof AuctionExceptions.AuctionNotFoundException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al listar las pujas", exception);
+  public String errorMessage() {
+    return "Error al listar las pujas";
   }
 }

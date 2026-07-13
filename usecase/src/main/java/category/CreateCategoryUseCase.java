@@ -31,9 +31,7 @@ public class CreateCategoryUseCase implements UseCase<CreateCategoryInput, Creat
   }
 
   @Override
-  public CreateCategoryResult failed(Exception exception) {
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al crear la categoría", exception);
+  public String errorMessage() {
+    return "Error al crear la categoría";
   }
 }

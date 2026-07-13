@@ -21,10 +21,7 @@ public class ChangePasswordUseCase implements UseCase<ChangePasswordInput, Chang
   @Override
   @Transactional
   public ChangePasswordResult execute(ChangePasswordInput input) {
-    User user =
-        userRepository
-            .findById(input.userId())
-            .orElseThrow(() -> new UserExceptions.UserNotFoundException(input.userId()));
+    User user = userRepository.getById(input.userId());
 
     if (!passwordEncoder.matches(input.currentPassword(), user.getPasswordHash())) {
       throw new UserExceptions.InvalidCurrentPasswordException();
@@ -37,11 +34,7 @@ public class ChangePasswordUseCase implements UseCase<ChangePasswordInput, Chang
   }
 
   @Override
-  public ChangePasswordResult failed(Exception exception) {
-    if (exception instanceof UserExceptions.UserNotFoundException e) throw e;
-    if (exception instanceof UserExceptions.InvalidCurrentPasswordException e) throw e;
-    throw exception instanceof RuntimeException re
-        ? re
-        : new RuntimeException("Error al cambiar la contraseña", exception);
+  public String errorMessage() {
+    return "Error al cambiar la contraseña";
   }
 }

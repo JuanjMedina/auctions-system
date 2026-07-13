@@ -14,7 +14,6 @@ import domain.wallets.WalletTransaction;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +62,7 @@ class GetWalletTransactionsUseCaseTest {
             buildTransaction(TransactionType.DEPOSIT, BigDecimal.valueOf(50)),
             buildTransaction(TransactionType.WITHDRAWAL, BigDecimal.valueOf(20)));
 
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.findTransactionsByWalletId(WALLET_ID)).thenReturn(transactions);
 
     // act
@@ -80,7 +79,7 @@ class GetWalletTransactionsUseCaseTest {
     WalletTransaction transaction =
         buildTransaction(TransactionType.DEPOSIT, BigDecimal.valueOf(50));
 
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.findTransactionsByWalletId(WALLET_ID)).thenReturn(List.of(transaction));
 
     // act
@@ -101,7 +100,7 @@ class GetWalletTransactionsUseCaseTest {
   void execute_walletWithNoTransactions_returnsEmptyList() {
     // arrange
     Wallet wallet = buildWallet();
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
     when(walletRepository.findTransactionsByWalletId(WALLET_ID)).thenReturn(List.of());
 
     // act
@@ -116,7 +115,8 @@ class GetWalletTransactionsUseCaseTest {
   @Test
   void execute_walletNotFound_throwsWalletNotFoundException() {
     // arrange
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+    when(walletRepository.getByUserId(USER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetWalletTransactionsInput(USER_ID)))
@@ -126,7 +126,8 @@ class GetWalletTransactionsUseCaseTest {
   @Test
   void execute_walletNotFound_neverQueriesTransactions() {
     // arrange
-    when(walletRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
+    when(walletRepository.getByUserId(USER_ID))
+        .thenThrow(new WalletExceptions.WalletNotFoundException(USER_ID));
 
     // act & assert
     assertThatThrownBy(() -> useCase.run(new GetWalletTransactionsInput(USER_ID)))
