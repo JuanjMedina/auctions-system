@@ -15,6 +15,8 @@ public class OutboxEvent {
   private final EventType eventType;
   private final String payload;
   private boolean processed;
+  private int retryCount;
+  private String lastError;
   private final Instant createdAt;
   private Instant processedAt;
 
@@ -27,6 +29,8 @@ public class OutboxEvent {
         .eventType(eventType)
         .payload(payload)
         .processed(false)
+        .retryCount(0)
+        .lastError(null)
         .createdAt(Instant.now())
         .processedAt(null)
         .build();
@@ -39,6 +43,8 @@ public class OutboxEvent {
       EventType eventType,
       String payload,
       boolean processed,
+      int retryCount,
+      String lastError,
       Instant createdAt,
       Instant processedAt) {
     return OutboxEvent.builder()
@@ -48,6 +54,8 @@ public class OutboxEvent {
         .eventType(eventType)
         .payload(payload)
         .processed(processed)
+        .retryCount(retryCount)
+        .lastError(lastError)
         .createdAt(createdAt)
         .processedAt(processedAt)
         .build();
@@ -59,5 +67,18 @@ public class OutboxEvent {
     }
     this.processed = true;
     this.processedAt = Instant.now();
+  }
+
+  /** Registra un intento de publicación fallido; el evento queda pendiente para reintento. */
+  public void markAsFailed(String error) {
+    if (processed) {
+      throw new IllegalStateException("OutboxEvent " + id + " already processed");
+    }
+    this.retryCount++;
+    this.lastError = error;
+  }
+
+  public boolean hasExhaustedRetries(int maxRetries) {
+    return retryCount >= maxRetries;
   }
 }

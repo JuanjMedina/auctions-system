@@ -46,6 +46,12 @@ public class OutboxEventJpaEntity {
   @Column(nullable = false)
   private boolean processed;
 
+  @Column(name = "retry_count", nullable = false)
+  private int retryCount;
+
+  @Column(name = "last_error")
+  private String lastError;
+
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;

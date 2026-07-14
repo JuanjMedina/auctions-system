@@ -4,6 +4,7 @@ import auction.input.CreateAuctionInput;
 import auction.output.CreateAuctionResult;
 import domain.auction.Auction;
 import domain.auction.AuctionRepository;
+import domain.outbox.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import shared.UseCase;
 public class CreateAuctionUseCase implements UseCase<CreateAuctionInput, CreateAuctionResult> {
 
   private final AuctionRepository auctionRepository;
+  private final OutboxEventRepository outboxEventRepository;
 
   @Override
   @Transactional
@@ -32,6 +34,7 @@ public class CreateAuctionUseCase implements UseCase<CreateAuctionInput, CreateA
             input.extendMinutes());
 
     Auction saved = auctionRepository.save(auction);
+
     return new CreateAuctionResult(saved.getId(), saved.getStatus(), saved.getCreatedAt());
   }
 

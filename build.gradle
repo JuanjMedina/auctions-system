@@ -23,7 +23,7 @@ def coverageExclusions = [
 def architectureGroups = [
         domain : [':domain'],
         usecase: [':usecase'],
-        adapter: [':adapter:in:web', ':adapter:in:scheduler', ':adapter:out:persistence', ':adapter:exception'],
+        adapter: [':adapter:in:web', ':adapter:in:scheduler', ':adapter:out:persistence', ':adapter:out:messaging', ':adapter:exception'],
         app    : [':app:spring']
 ]
 

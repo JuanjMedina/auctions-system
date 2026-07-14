@@ -9,7 +9,8 @@ public interface OutboxEventRepository {
 
   Optional<OutboxEvent> findById(UUID id);
 
-  List<OutboxEvent> findUnprocessed();
+  /** Eventos pendientes (no procesados y con reintentos disponibles), más antiguos primero. */
+  List<OutboxEvent> findUnprocessed(int maxRetries, int limit);
 
   void saveAll(List<OutboxEvent> events);
 }

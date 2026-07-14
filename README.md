@@ -15,6 +15,7 @@ adapter/
   in/web/                Controllers REST, seguridad JWT
   in/scheduler/          Jobs: activar/cerrar subastas, poller del outbox
   out/persistence/       JPA + Spring Data (implementa los puertos de dominio)
+  out/messaging/         Publicación de eventos de integración (in-process, swappable a broker)
   exception/             Mapeo de excepciones de dominio → HTTP
 app/spring/              Arranque, configuración, migraciones Flyway
 ```
@@ -24,7 +25,7 @@ Reglas clave del diseño:
 - `domain` no conoce Spring ni JPA. Los agregados exponen comportamiento (`auction.placeBid()`, `wallet.reserve()`) y validan sus invariantes.
 - Los puertos (`AuctionRepository`, `WalletRepository`, `TokenGenerator`...) viven en `domain`; los adaptadores los implementan.
 - **Optimistic locking** (`@Version` + retry con backoff) protege pujas concurrentes.
-- **Patrón outbox** para eventos de dominio (`BID_PLACED`, `AUCTION_AWARDED`...), procesados por un poller.
+- **Patrón outbox** para eventos de dominio (`BID_PLACED`, `AUCTION_AWARDED`...): un poller los publica por el puerto `EventPublisher` (transacción por evento, reintentos con máximo y registro del último error).
 - Fondos de pujas: se **reservan** al pujar, se **liberan** al ser superado y se **cobran** al adjudicar — siempre en la misma transacción.
 
 ## Quick start
@@ -88,7 +89,8 @@ Los schedulers corren cada 30 s: activan subastas programadas y cierran las expi
 
 ## Roadmap
 
-- [ ] Publisher real para el outbox (broker de eventos)
+- [x] Outbox completo con publisher (in-process vía eventos de Spring)
+- [ ] Sustituir el publisher in-process por un broker (Kafka/RabbitMQ)
 - [ ] CI (build + tests en cada push)
 - [ ] Perfiles `dev`/`prod` y endurecimiento de JWT (revocación, tokens cortos)
 - [ ] Observabilidad (métricas y trazas)

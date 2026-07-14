@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import repository.outbox.SpringDataOutboxEventRepository;
 
@@ -28,8 +29,11 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
   }
 
   @Override
-  public List<OutboxEvent> findUnprocessed() {
-    return springDataRepo.findByProcessedFalseOrderByCreatedAtAsc().stream()
+  public List<OutboxEvent> findUnprocessed(int maxRetries, int limit) {
+    return springDataRepo
+        .findByProcessedFalseAndRetryCountLessThanOrderByCreatedAtAsc(
+            maxRetries, PageRequest.of(0, limit))
+        .stream()
         .map(this::toDomain)
         .toList();
   }
@@ -47,6 +51,8 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
         .eventType(event.getEventType().name())
         .payload(event.getPayload())
         .processed(event.isProcessed())
+        .retryCount(event.getRetryCount())
+        .lastError(event.getLastError())
         .processedAt(event.getProcessedAt())
         .build();
   }
@@ -59,6 +65,8 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
         EventType.valueOf(entity.getEventType()),
         entity.getPayload(),
         entity.isProcessed(),
+        entity.getRetryCount(),
+        entity.getLastError(),
         entity.getCreatedAt(),
         entity.getProcessedAt());
   }
