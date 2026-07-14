@@ -15,6 +15,7 @@ import domain.wallets.Wallet;
 import domain.wallets.WalletExceptions;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.retry.annotation.Backoff;
@@ -56,7 +57,7 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
 
     // Release funds of the bidder just outbid
     if (previousWinnerId != null) {
-      releaseOutbidFunds(input.auctionId(), previousWinnerId);
+      releaseOutbidFunds(input.auctionId(), previousWinnerId, input.amount());
     }
 
     // Create bid and reserve funds atomically
@@ -96,7 +97,7 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
     return "Error al realizar la puja";
   }
 
-  private void releaseOutbidFunds(UUID auctionId, UUID previousWinnerId) {
+  private void releaseOutbidFunds(UUID auctionId, UUID previousWinnerId, BigDecimal newAmount) {
     bidRepository
         .findLatestActiveBidByAuctionIdAndBidderId(auctionId, previousWinnerId)
         .ifPresent(
@@ -108,6 +109,15 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
               walletRepository.save(previousWallet);
               walletRepository.saveTransaction(release);
               bidRepository.save(previous);
+
+              outboxEventRepository.save(
+                  OutboxEvent.create(
+                      AggregateType.BID,
+                      previous.getId(),
+                      EventType.BID_OUTBID,
+                      String.format(
+                          "{\"bidId\":\"%s\",\"auctionId\":\"%s\",\"outbidUserId\":\"%s\",\"newAmount\":\"%s\"}",
+                          previous.getId(), auctionId, previousWinnerId, newAmount)));
             });
   }
 

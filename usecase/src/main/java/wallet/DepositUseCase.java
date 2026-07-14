@@ -1,5 +1,9 @@
 package wallet;
 
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
@@ -15,6 +19,7 @@ import wallet.output.DepositResult;
 public class DepositUseCase implements UseCase<DepositInput, DepositResult> {
 
   private final WalletRepository walletRepository;
+  private final OutboxEventRepository outboxEventRepository;
 
   @Override
   @Transactional
@@ -25,6 +30,15 @@ public class DepositUseCase implements UseCase<DepositInput, DepositResult> {
 
     walletRepository.save(wallet);
     WalletTransaction saved = walletRepository.saveTransaction(transaction);
+
+    outboxEventRepository.save(
+        OutboxEvent.create(
+            AggregateType.WALLET,
+            wallet.getId(),
+            EventType.WALLET_DEPOSITED,
+            String.format(
+                "{\"walletId\":\"%s\",\"userId\":\"%s\",\"amount\":\"%s\",\"balanceAfter\":\"%s\"}",
+                wallet.getId(), input.userId(), saved.getAmount(), saved.getBalanceAfter())));
 
     return new DepositResult(
         saved.getId(),

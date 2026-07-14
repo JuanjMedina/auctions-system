@@ -5,6 +5,10 @@ import auction.output.PublishAuctionResult;
 import domain.auction.Auction;
 import domain.auction.AuctionExceptions;
 import domain.auction.AuctionRepository;
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +19,7 @@ import shared.UseCase;
 public class PublishAuctionUseCase implements UseCase<PublishAuctionInput, PublishAuctionResult> {
 
   private final AuctionRepository auctionRepository;
+  private final OutboxEventRepository outboxEventRepository;
 
   @Override
   @Transactional
@@ -27,6 +32,20 @@ public class PublishAuctionUseCase implements UseCase<PublishAuctionInput, Publi
 
     auction.publish();
     Auction saved = auctionRepository.save(auction);
+
+    outboxEventRepository.save(
+        OutboxEvent.create(
+            AggregateType.AUCTION,
+            saved.getId(),
+            EventType.AUCTION_PUBLISHED,
+            String.format(
+                "{\"auctionId\":\"%s\",\"sellerId\":\"%s\",\"status\":\"%s\",\"startsAt\":\"%s\",\"endsAt\":\"%s\"}",
+                saved.getId(),
+                saved.getSellerId(),
+                saved.getStatus(),
+                saved.getStartsAt(),
+                saved.getEndsAt())));
+
     return new PublishAuctionResult(saved.getId(), saved.getStatus());
   }
 

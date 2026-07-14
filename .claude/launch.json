@@ -4,8 +4,20 @@
     {
       "name": "spring-boot",
       "runtimeExecutable": "cmd.exe",
-      "runtimeArgs": ["/c", "gradlew.bat", ":app:spring:bootRun"],
+      "runtimeArgs": [
+        "/c",
+        "C:\\Users\\juanj\\Documents\\github\\spring-projects\\auctions-system\\gradlew.bat",
+        "-p",
+        "C:\\Users\\juanj\\Documents\\github\\spring-projects\\auctions-system",
+        ":app:spring:bootRun"
+      ],
       "port": 8080
+    },
+    {
+      "name": "auctions-web",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["--cwd", "../auctions-web", "dev"],
+      "port": 5173
     }
   ]
 }

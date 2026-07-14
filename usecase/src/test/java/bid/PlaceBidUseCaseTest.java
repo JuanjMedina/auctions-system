@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +17,7 @@ import domain.auction.AuctionStatus;
 import domain.bid.Bid;
 import domain.bid.BidRepository;
 import domain.bid.BidStatus;
+import domain.outbox.EventType;
 import domain.outbox.OutboxEvent;
 import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
@@ -29,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -335,5 +338,83 @@ class PlaceBidUseCaseTest {
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(AuctionExceptions.AuctionNotActiveException.class);
+  }
+
+  // --- eventos de outbox ---
+
+  @Test
+  void execute_previousWinnerExists_emitsBidOutbidAndBidPlacedEvents() {
+    // arrange
+    UUID previousWinnerId = UUID.randomUUID();
+    Auction auction =
+        Auction.reconstitute(
+            AUCTION_ID,
+            SELLER_ID,
+            UUID.randomUUID(),
+            "Subasta test",
+            "Descripcion",
+            BigDecimal.TEN,
+            null,
+            BigDecimal.valueOf(15),
+            previousWinnerId,
+            AuctionStatus.ACTIVE,
+            Instant.now().minusSeconds(3600),
+            Instant.now().plusSeconds(3600),
+            null,
+            false,
+            5,
+            List.of(),
+            Instant.now(),
+            Instant.now(),
+            0L);
+    Wallet bidderWallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(100));
+    Wallet previousWallet = buildWallet(previousWinnerId, BigDecimal.valueOf(50));
+    previousWallet.reserve(BigDecimal.valueOf(15), UUID.randomUUID());
+    Bid previousBid =
+        Bid.reconstitute(
+            UUID.randomUUID(),
+            AUCTION_ID,
+            previousWinnerId,
+            BigDecimal.valueOf(15),
+            false,
+            null,
+            BidStatus.ACTIVE,
+            Instant.now());
+
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(bidderWallet);
+    when(bidRepository.findLatestActiveBidByAuctionIdAndBidderId(AUCTION_ID, previousWinnerId))
+        .thenReturn(Optional.of(previousBid));
+    when(walletRepository.getByUserId(previousWinnerId)).thenReturn(previousWallet);
+    mockSaves();
+
+    // act
+    useCase.run(validInput());
+
+    // assert
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository, times(2)).save(captor.capture());
+    assertThat(captor.getAllValues())
+        .extracting(OutboxEvent::getEventType)
+        .containsExactly(EventType.BID_OUTBID, EventType.BID_PLACED);
+    assertThat(captor.getAllValues().get(0).getAggregateId()).isEqualTo(previousBid.getId());
+  }
+
+  @Test
+  void execute_noPreviousWinner_emitsOnlyBidPlacedEvent() {
+    // arrange
+    Auction auction = buildAuction();
+    Wallet wallet = buildWallet(BIDDER_ID, BigDecimal.valueOf(100));
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
+    mockSaves();
+
+    // act
+    useCase.run(validInput());
+
+    // assert
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository).save(captor.capture());
+    assertThat(captor.getValue().getEventType()).isEqualTo(EventType.BID_PLACED);
   }
 }

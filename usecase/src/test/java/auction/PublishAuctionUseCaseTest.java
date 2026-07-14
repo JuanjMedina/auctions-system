@@ -14,12 +14,17 @@ import domain.auction.AuctionExceptions.InvalidAuctionStatusTransitionException;
 import domain.auction.AuctionExceptions.UnauthorizedAuctionAccessException;
 import domain.auction.AuctionRepository;
 import domain.auction.AuctionStatus;
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PublishAuctionUseCaseTest {
 
   @Mock private AuctionRepository auctionRepository;
+  @Mock private OutboxEventRepository outboxEventRepository;
 
   @InjectMocks private PublishAuctionUseCase useCase;
 
@@ -156,5 +162,29 @@ class PublishAuctionUseCaseTest {
     // act & assert
     assertThatThrownBy(() -> useCase.run(new PublishAuctionInput(auctionId, sellerId)))
         .isInstanceOf(InvalidAuctionStatusTransitionException.class);
+  }
+
+  // --- evento de outbox ---
+
+  @Test
+  void execute_validPublish_emitsAuctionPublishedEvent() {
+    // arrange
+    UUID auctionId = UUID.randomUUID();
+    UUID sellerId = UUID.randomUUID();
+    Auction auction =
+        buildAuction(auctionId, sellerId, AuctionStatus.DRAFT, Instant.now().plusSeconds(3600));
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
+    when(auctionRepository.save(auction)).thenReturn(auction);
+
+    // act
+    useCase.run(new PublishAuctionInput(auctionId, sellerId));
+
+    // assert
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository).save(captor.capture());
+    OutboxEvent event = captor.getValue();
+    assertThat(event.getEventType()).isEqualTo(EventType.AUCTION_PUBLISHED);
+    assertThat(event.getAggregateType()).isEqualTo(AggregateType.AUCTION);
+    assertThat(event.getAggregateId()).isEqualTo(auctionId);
   }
 }

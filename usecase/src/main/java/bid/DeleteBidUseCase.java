@@ -8,6 +8,10 @@ import domain.bid.Bid;
 import domain.bid.BidExceptions;
 import domain.bid.BidRepository;
 import domain.bid.BidStatus;
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
 import domain.wallets.WalletRepository;
 import domain.wallets.WalletTransaction;
@@ -24,6 +28,7 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
   private final BidRepository bidRepository;
   private final AuctionRepository auctionRepository;
   private final WalletRepository walletRepository;
+  private final OutboxEventRepository outboxEventRepository;
 
   @Override
   @Transactional
@@ -53,6 +58,15 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
     }
 
     bidRepository.save(bid);
+
+    outboxEventRepository.save(
+        OutboxEvent.create(
+            AggregateType.BID,
+            bid.getId(),
+            EventType.BID_CANCELLED,
+            String.format(
+                "{\"bidId\":\"%s\",\"auctionId\":\"%s\",\"bidderId\":\"%s\",\"amount\":\"%s\"}",
+                bid.getId(), bid.getAuctionId(), bid.getBidderId(), bid.getAmount())));
 
     return new DeleteBidOutput(bid.getId(), bid.getAuctionId(), bid.getStatus());
   }

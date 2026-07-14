@@ -21,6 +21,10 @@ import domain.bid.BidExceptions.InvalidBidStatusTransitionException;
 import domain.bid.BidExceptions.UnauthorizedBidAccessException;
 import domain.bid.BidRepository;
 import domain.bid.BidStatus;
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.wallets.Wallet;
 import domain.wallets.WalletExceptions;
 import domain.wallets.WalletExceptions.WalletNotFoundException;
@@ -31,6 +35,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,6 +46,7 @@ class DeleteBidUseCaseTest {
   @Mock private BidRepository bidRepository;
   @Mock private AuctionRepository auctionRepository;
   @Mock private WalletRepository walletRepository;
+  @Mock private OutboxEventRepository outboxEventRepository;
 
   @InjectMocks private DeleteBidUseCase useCase;
 
@@ -252,5 +258,32 @@ class DeleteBidUseCaseTest {
 
     verify(bidRepository, never()).save(any());
     verify(auctionRepository, never()).save(any());
+  }
+
+  // --- evento de outbox ---
+
+  @Test
+  void execute_cancelledBid_emitsBidCancelledEvent() {
+    Bid bid = buildBid(BIDDER_ID, BigDecimal.TEN, BidStatus.ACTIVE);
+    Bid leaderBid = buildBid(UUID.randomUUID(), BigDecimal.valueOf(20), BidStatus.ACTIVE);
+    Auction auction = buildAuction(BigDecimal.valueOf(20), leaderBid.getBidderId());
+    Wallet wallet = buildWalletWithReserve(BIDDER_ID, BigDecimal.TEN);
+
+    when(bidRepository.getById(bid.getId())).thenReturn(bid);
+    when(auctionRepository.getById(AUCTION_ID)).thenReturn(auction);
+    when(walletRepository.getByUserId(BIDDER_ID)).thenReturn(wallet);
+    when(bidRepository.findActiveByAuctionId(AUCTION_ID)).thenReturn(List.of(leaderBid));
+    when(bidRepository.save(any(Bid.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(walletRepository.saveTransaction(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    useCase.run(new DeleteBidInput(bid.getId(), AUCTION_ID, BIDDER_ID));
+
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository).save(captor.capture());
+    OutboxEvent event = captor.getValue();
+    assertThat(event.getEventType()).isEqualTo(EventType.BID_CANCELLED);
+    assertThat(event.getAggregateType()).isEqualTo(AggregateType.BID);
+    assertThat(event.getAggregateId()).isEqualTo(bid.getId());
   }
 }

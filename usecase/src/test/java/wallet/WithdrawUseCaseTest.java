@@ -7,6 +7,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.wallets.TransactionType;
 import domain.wallets.Wallet;
 import domain.wallets.WalletExceptions;
@@ -16,6 +20,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +31,7 @@ import wallet.output.WithdrawResult;
 class WithdrawUseCaseTest {
 
   @Mock private WalletRepository walletRepository;
+  @Mock private OutboxEventRepository outboxEventRepository;
 
   @InjectMocks private WithdrawUseCase useCase;
 
@@ -134,5 +140,27 @@ class WithdrawUseCaseTest {
     // act & assert
     assertThatThrownBy(() -> useCase.run(validInput()))
         .isInstanceOf(WalletExceptions.InsufficientFundsException.class);
+  }
+
+  // --- evento de outbox ---
+
+  @Test
+  void execute_validWithdraw_emitsWalletWithdrawnEvent() {
+    // arrange
+    Wallet wallet = buildWallet(BigDecimal.valueOf(100));
+    when(walletRepository.getByUserId(USER_ID)).thenReturn(wallet);
+    when(walletRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(walletRepository.saveTransaction(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    // act
+    useCase.run(validInput());
+
+    // assert
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository).save(captor.capture());
+    OutboxEvent event = captor.getValue();
+    assertThat(event.getEventType()).isEqualTo(EventType.WALLET_WITHDRAWN);
+    assertThat(event.getAggregateType()).isEqualTo(AggregateType.WALLET);
+    assertThat(event.getAggregateId()).isEqualTo(wallet.getId());
   }
 }

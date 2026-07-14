@@ -13,12 +13,17 @@ import domain.auction.AuctionExceptions.AuctionNotFoundException;
 import domain.auction.AuctionExceptions.InvalidAuctionStatusTransitionException;
 import domain.auction.AuctionRepository;
 import domain.auction.AuctionStatus;
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ActivateAuctionUseCaseTest {
 
   @Mock private AuctionRepository auctionRepository;
+  @Mock private OutboxEventRepository outboxEventRepository;
 
   @InjectMocks private ActivateAuctionUseCase useCase;
 
@@ -126,5 +132,27 @@ class ActivateAuctionUseCaseTest {
     // act & assert
     assertThatThrownBy(() -> useCase.run(new ActivateAuctionInput(auctionId)))
         .isInstanceOf(InvalidAuctionStatusTransitionException.class);
+  }
+
+  // --- evento de outbox ---
+
+  @Test
+  void execute_scheduledAuction_emitsAuctionActivatedEvent() {
+    // arrange
+    UUID auctionId = UUID.randomUUID();
+    Auction auction = buildAuction(auctionId, AuctionStatus.SCHEDULED);
+    when(auctionRepository.getById(auctionId)).thenReturn(auction);
+    when(auctionRepository.save(auction)).thenReturn(auction);
+
+    // act
+    useCase.run(new ActivateAuctionInput(auctionId));
+
+    // assert
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository).save(captor.capture());
+    OutboxEvent event = captor.getValue();
+    assertThat(event.getEventType()).isEqualTo(EventType.AUCTION_ACTIVATED);
+    assertThat(event.getAggregateType()).isEqualTo(AggregateType.AUCTION);
+    assertThat(event.getAggregateId()).isEqualTo(auctionId);
   }
 }

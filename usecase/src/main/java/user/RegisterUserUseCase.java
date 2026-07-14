@@ -1,5 +1,9 @@
 package user;
 
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.user.Role;
 import domain.user.User;
 import domain.user.UserExceptions;
@@ -21,6 +25,7 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
   private final UserRepository userRepository;
   private final WalletRepository walletRepository;
   private final UserPasswordEncoder passwordEncoder;
+  private final OutboxEventRepository outboxEventRepository;
 
   @Override
   @Transactional
@@ -46,6 +51,15 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
 
     Wallet wallet = Wallet.create(savedUser.getId());
     Wallet savedWallet = walletRepository.save(wallet);
+
+    outboxEventRepository.save(
+        OutboxEvent.create(
+            AggregateType.USER,
+            savedUser.getId(),
+            EventType.USER_REGISTERED,
+            String.format(
+                "{\"userId\":\"%s\",\"username\":\"%s\",\"role\":\"%s\"}",
+                savedUser.getId(), savedUser.getUsername(), savedUser.getRole())));
 
     return new RegisterUserResult(
         savedUser.getId(), savedUser.getEmail(), savedUser.getUsername(), savedWallet.getId());

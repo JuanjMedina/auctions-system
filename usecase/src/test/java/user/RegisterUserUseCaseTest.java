@@ -7,6 +7,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import domain.outbox.AggregateType;
+import domain.outbox.EventType;
+import domain.outbox.OutboxEvent;
+import domain.outbox.OutboxEventRepository;
 import domain.user.Role;
 import domain.user.UserExceptions.EmailAlreadyTakenException;
 import domain.user.UserExceptions.UsernameAlreadyTakenException;
@@ -16,6 +20,7 @@ import domain.wallets.Wallet;
 import domain.wallets.WalletRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +33,7 @@ class RegisterUserUseCaseTest {
   @Mock private UserRepository userRepository;
   @Mock private WalletRepository walletRepository;
   @Mock private UserPasswordEncoder passwordEncoder;
+  @Mock private OutboxEventRepository outboxEventRepository;
 
   @InjectMocks private RegisterUserUseCase useCase;
 
@@ -207,5 +213,22 @@ class RegisterUserUseCaseTest {
   // --- helper para capturar argumentos con assertj ---
   private static <T> T argThat(java.util.function.Predicate<T> predicate) {
     return org.mockito.ArgumentMatchers.argThat(predicate::test);
+  }
+
+  // --- evento de outbox ---
+
+  @Test
+  void execute_validInput_emitsUserRegisteredEvent() {
+    setupHappyPath();
+
+    RegisterUserResult result = useCase.run(validInput());
+
+    ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
+    verify(outboxEventRepository).save(captor.capture());
+    OutboxEvent event = captor.getValue();
+    assertThat(event.getEventType()).isEqualTo(EventType.USER_REGISTERED);
+    assertThat(event.getAggregateType()).isEqualTo(AggregateType.USER);
+    assertThat(event.getAggregateId()).isEqualTo(result.userId());
+    assertThat(event.getPayload()).doesNotContain(EMAIL);
   }
 }

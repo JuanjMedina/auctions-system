@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import repository.outbox.SpringDataOutboxEventRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +42,8 @@ class OutboxEventJpaAdapterTest {
         EventType.BID_PLACED,
         "{\"key\":\"value\"}",
         processed,
+        0,
+        null,
         Instant.now(),
         processed ? Instant.now() : null);
   }
@@ -126,13 +129,15 @@ class OutboxEventJpaAdapterTest {
   // --- findUnprocessed ---
 
   @Test
-  void findUnprocessed_delegatesToFindByProcessedFalseOrderByCreatedAtAscAndMapsResults() {
+  void findUnprocessed_delegatesWithMaxRetriesAndLimitAndMapsResults() {
     // arrange
     OutboxEventJpaEntity entity = buildEntity(UUID.randomUUID(), false);
-    when(springDataRepo.findByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of(entity));
+    when(springDataRepo.findByProcessedFalseAndRetryCountLessThanOrderByCreatedAtAsc(
+            5, PageRequest.of(0, 10)))
+        .thenReturn(List.of(entity));
 
     // act
-    List<OutboxEvent> result = adapter.findUnprocessed();
+    List<OutboxEvent> result = adapter.findUnprocessed(5, 10);
 
     // assert
     assertThat(result).hasSize(1);
@@ -142,10 +147,12 @@ class OutboxEventJpaAdapterTest {
   @Test
   void findUnprocessed_noneUnprocessed_returnsEmptyList() {
     // arrange
-    when(springDataRepo.findByProcessedFalseOrderByCreatedAtAsc()).thenReturn(List.of());
+    when(springDataRepo.findByProcessedFalseAndRetryCountLessThanOrderByCreatedAtAsc(
+            any(Integer.class), any(PageRequest.class)))
+        .thenReturn(List.of());
 
     // act
-    List<OutboxEvent> result = adapter.findUnprocessed();
+    List<OutboxEvent> result = adapter.findUnprocessed(5, 10);
 
     // assert
     assertThat(result).isEmpty();
