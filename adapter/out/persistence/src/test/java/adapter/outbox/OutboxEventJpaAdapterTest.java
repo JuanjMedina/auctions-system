@@ -87,6 +87,7 @@ class OutboxEventJpaAdapterTest {
     assertThat(captured.getEventType()).isEqualTo("BID_PLACED");
     assertThat(captured.getPayload()).isEqualTo(event.getPayload());
     assertThat(captured.isProcessed()).isFalse();
+    assertThat(captured.getCreatedAt()).isEqualTo(event.getCreatedAt());
 
     assertThat(result.getId()).isEqualTo(id);
     assertThat(result.getEventType()).isEqualTo(EventType.BID_PLACED);

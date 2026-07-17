@@ -53,6 +53,7 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
         .processed(event.isProcessed())
         .retryCount(event.getRetryCount())
         .lastError(event.getLastError())
+        .createdAt(event.getCreatedAt())
         .processedAt(event.getProcessedAt())
         .build();
   }
