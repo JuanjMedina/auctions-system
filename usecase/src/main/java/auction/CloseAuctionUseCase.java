@@ -32,6 +32,11 @@ public class CloseAuctionUseCase implements UseCase<CloseAuctionInput, CloseAuct
 
   @Override
   @Transactional
+  public CloseAuctionResult run(CloseAuctionInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public CloseAuctionResult execute(CloseAuctionInput input) {
     Auction auction = auctionRepository.getById(input.auctionId());
 

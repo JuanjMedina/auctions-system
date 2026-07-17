@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import domain.categories.Category;
 import entity.category.CategoryJpaEntity;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,11 +25,13 @@ class CategoryJpaAdapterTest {
 
   @Mock private SpringDataCategoryRepository springDataRepo;
 
+  @Mock private EntityManager entityManager;
+
   private CategoryJpaAdapter adapter;
 
   @BeforeEach
   void setUp() {
-    adapter = new CategoryJpaAdapter(springDataRepo);
+    adapter = new CategoryJpaAdapter(springDataRepo, entityManager);
   }
 
   private Category buildCategory(UUID id, UUID parentId, boolean isActive) {
@@ -82,6 +85,8 @@ class CategoryJpaAdapterTest {
     Category category = buildCategory(id, parentId, true);
     CategoryJpaEntity savedEntity = buildEntity(id, parentId, true);
 
+    when(entityManager.getReference(CategoryJpaEntity.class, parentId))
+        .thenReturn(buildEntity(parentId, null, true));
     when(springDataRepo.save(any(CategoryJpaEntity.class))).thenReturn(savedEntity);
 
     // act

@@ -14,6 +14,7 @@ import domain.wallets.WalletTransaction;
 import entity.user.UserEntity;
 import entity.wallet.WalletJpaEntity;
 import entity.wallet.WalletTransactionJpaEntity;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -36,11 +37,13 @@ class WalletJpaAdapterTest {
 
   @Mock private SpringDataWalletTransactionRepository transactionRepo;
 
+  @Mock private EntityManager entityManager;
+
   private WalletJpaAdapter adapter;
 
   @BeforeEach
   void setUp() {
-    adapter = new WalletJpaAdapter(walletRepo, transactionRepo);
+    adapter = new WalletJpaAdapter(walletRepo, transactionRepo, entityManager);
   }
 
   private Wallet buildWallet(UUID id, UUID userId) {
@@ -97,6 +100,8 @@ class WalletJpaAdapterTest {
     Wallet wallet = buildWallet(id, userId);
     WalletJpaEntity savedEntity = buildEntity(id, userId);
 
+    when(entityManager.getReference(UserEntity.class, userId))
+        .thenReturn(UserEntity.builder().id(userId).build());
     when(walletRepo.save(any(WalletJpaEntity.class))).thenReturn(savedEntity);
 
     // act

@@ -23,6 +23,11 @@ public class ActivateAuctionUseCase
 
   @Override
   @Transactional
+  public ActivateAuctionResult run(ActivateAuctionInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public ActivateAuctionResult execute(ActivateAuctionInput input) {
     Auction auction = auctionRepository.getById(input.auctionId());
 

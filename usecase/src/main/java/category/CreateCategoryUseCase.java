@@ -18,6 +18,11 @@ public class CreateCategoryUseCase implements UseCase<CreateCategoryInput, Creat
 
   @Override
   @Transactional
+  public CreateCategoryResult run(CreateCategoryInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public CreateCategoryResult execute(CreateCategoryInput input) {
     if (categoryRepository.existsBySlug(input.slug())) {
       throw new CategoryExceptions.CategorySlugAlreadyExistsException(input.slug());

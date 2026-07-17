@@ -39,6 +39,11 @@ public class PlaceBidUseCase implements UseCase<PlaceBidInput, PlaceBidOutput> {
       retryFor = ConcurrencyException.class,
       maxAttempts = 3,
       backoff = @Backoff(delay = 100, multiplier = 2))
+  public PlaceBidOutput run(PlaceBidInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public PlaceBidOutput execute(PlaceBidInput input) {
     Auction auction = auctionRepository.getById(input.auctionId());
 

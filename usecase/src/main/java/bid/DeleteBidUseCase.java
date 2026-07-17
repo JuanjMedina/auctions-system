@@ -32,6 +32,11 @@ public class DeleteBidUseCase implements UseCase<DeleteBidInput, DeleteBidOutput
 
   @Override
   @Transactional
+  public DeleteBidOutput run(DeleteBidInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public DeleteBidOutput execute(DeleteBidInput input) {
     Bid bid = bidRepository.getById(input.bidId());
 

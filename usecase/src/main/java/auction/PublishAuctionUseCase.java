@@ -23,6 +23,11 @@ public class PublishAuctionUseCase implements UseCase<PublishAuctionInput, Publi
 
   @Override
   @Transactional
+  public PublishAuctionResult run(PublishAuctionInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public PublishAuctionResult execute(PublishAuctionInput input) {
     Auction auction = auctionRepository.getById(input.auctionId());
 

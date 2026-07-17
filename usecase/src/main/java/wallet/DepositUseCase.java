@@ -23,6 +23,11 @@ public class DepositUseCase implements UseCase<DepositInput, DepositResult> {
 
   @Override
   @Transactional
+  public DepositResult run(DepositInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public DepositResult execute(DepositInput input) {
     Wallet wallet = walletRepository.getByUserId(input.userId());
 

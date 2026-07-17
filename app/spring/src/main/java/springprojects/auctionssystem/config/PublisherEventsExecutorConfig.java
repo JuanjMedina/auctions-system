@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
-public class PublisherEventsExecutor {
+public class PublisherEventsExecutorConfig {
   @Bean
   public Executor publisherEventsExecutor() {
 

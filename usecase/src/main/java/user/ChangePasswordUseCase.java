@@ -20,6 +20,11 @@ public class ChangePasswordUseCase implements UseCase<ChangePasswordInput, Chang
 
   @Override
   @Transactional
+  public ChangePasswordResult run(ChangePasswordInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public ChangePasswordResult execute(ChangePasswordInput input) {
     User user = userRepository.getById(input.userId());
 

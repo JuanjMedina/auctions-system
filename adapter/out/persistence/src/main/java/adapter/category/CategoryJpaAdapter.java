@@ -3,6 +3,7 @@ package adapter.category;
 import domain.categories.Category;
 import domain.categories.CategoryRepository;
 import entity.category.CategoryJpaEntity;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import repository.category.SpringDataCategoryRepository;
 public class CategoryJpaAdapter implements CategoryRepository {
 
   private final SpringDataCategoryRepository springDataRepo;
+  private final EntityManager entityManager;
 
   @Override
   public Category save(Category category) {
@@ -52,9 +54,11 @@ public class CategoryJpaAdapter implements CategoryRepository {
   }
 
   private CategoryJpaEntity toJpaEntity(Category category) {
+    // entityManager.getReference (no un CategoryJpaEntity "a mano") produce un proxy que
+    // Hibernate reconoce como existente sin cargarlo; ver WalletJpaAdapter.toJpaEntity.
     CategoryJpaEntity parent =
         category.getParentId() != null
-            ? CategoryJpaEntity.builder().id(category.getParentId()).build()
+            ? entityManager.getReference(CategoryJpaEntity.class, category.getParentId())
             : null;
 
     return CategoryJpaEntity.builder()

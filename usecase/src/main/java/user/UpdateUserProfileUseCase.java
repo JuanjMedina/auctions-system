@@ -19,6 +19,11 @@ public class UpdateUserProfileUseCase
 
   @Override
   @Transactional
+  public UpdateUserProfileResult run(UpdateUserProfileInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public UpdateUserProfileResult execute(UpdateUserProfileInput input) {
     User user = userRepository.getById(input.userId());
 

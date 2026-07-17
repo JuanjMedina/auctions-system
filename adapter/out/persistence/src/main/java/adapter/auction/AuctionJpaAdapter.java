@@ -40,6 +40,19 @@ public class AuctionJpaAdapter implements AuctionRepository {
     }
   }
 
+  // AuctionRepository.getById() es un metodo default que autoinvoca findById(): esa
+  // autoinvocacion no pasa por el proxy de Spring (mismo problema que UseCase#run, ver
+  // shared.UseCase), y por tanto ninguna anotacion de clase se aplicaria a esa llamada.
+  // Se sobreescribe aqui para que quede realmente interceptada y abra sesion antes de mapear
+  // AuctionJpaEntity.images (coleccion lazy) a dominio; sin esto, fuera del Open Session In
+  // View de un request HTTP (p.ej. llamado directamente desde un test o un job), revienta con
+  // LazyInitializationException.
+  @Override
+  @Transactional(readOnly = true)
+  public Auction getById(UUID id) {
+    return AuctionRepository.super.getById(id);
+  }
+
   @Override
   public Optional<Auction> findById(UUID id) {
     return springDataRepo.findById(id).map(this::toDomain);

@@ -31,6 +31,11 @@ public class CancelAuctionUseCase implements UseCase<CancelAuctionInput, CancelA
 
   @Override
   @Transactional
+  public CancelAuctionResult run(CancelAuctionInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public CancelAuctionResult execute(CancelAuctionInput input) {
     Auction auction = auctionRepository.getById(input.auctionId());
 

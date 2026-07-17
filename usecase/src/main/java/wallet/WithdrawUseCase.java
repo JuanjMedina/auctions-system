@@ -23,6 +23,11 @@ public class WithdrawUseCase implements UseCase<WithdrawInput, WithdrawResult> {
 
   @Override
   @Transactional
+  public WithdrawResult run(WithdrawInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public WithdrawResult execute(WithdrawInput input) {
     Wallet wallet = walletRepository.getByUserId(input.userId());
 

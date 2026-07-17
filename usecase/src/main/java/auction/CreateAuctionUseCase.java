@@ -19,6 +19,11 @@ public class CreateAuctionUseCase implements UseCase<CreateAuctionInput, CreateA
 
   @Override
   @Transactional
+  public CreateAuctionResult run(CreateAuctionInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public CreateAuctionResult execute(CreateAuctionInput input) {
     Auction auction =
         Auction.create(

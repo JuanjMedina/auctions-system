@@ -29,6 +29,11 @@ public class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterU
 
   @Override
   @Transactional
+  public RegisterUserResult run(RegisterUserInput input) {
+    return UseCase.super.run(input);
+  }
+
+  @Override
   public RegisterUserResult execute(RegisterUserInput input) {
     if (userRepository.existsByEmail(input.email())) {
       throw new UserExceptions.EmailAlreadyTakenException(input.email());

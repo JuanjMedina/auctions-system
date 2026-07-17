@@ -7,6 +7,7 @@ import domain.wallets.WalletTransaction;
 import entity.user.UserEntity;
 import entity.wallet.WalletJpaEntity;
 import entity.wallet.WalletTransactionJpaEntity;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class WalletJpaAdapter implements WalletRepository {
 
   private final SpringDataWalletRepository walletRepo;
   private final SpringDataWalletTransactionRepository transactionRepo;
+  private final EntityManager entityManager;
 
   @Override
   public Wallet save(Wallet wallet) {
@@ -61,9 +63,13 @@ public class WalletJpaAdapter implements WalletRepository {
   }
 
   private WalletJpaEntity toJpaEntity(Wallet wallet) {
+    // entityManager.getReference (no un UserEntity "a mano") produce un proxy que Hibernate
+    // reconoce como existente sin necesidad de cargarlo; un builder().id(...) manual se trata
+    // como instancia transitoria y revienta con TransientPropertyValueException si el User
+    // referenciado se creo en la misma transaccion (aun no flusheado/commiteado).
     return WalletJpaEntity.builder()
         .id(wallet.getId())
-        .user(UserEntity.builder().id(wallet.getUserId()).build())
+        .user(entityManager.getReference(UserEntity.class, wallet.getUserId()))
         .balance(wallet.getBalance())
         .reservedBalance(wallet.getReservedBalance())
         .currency(wallet.getCurrency())
